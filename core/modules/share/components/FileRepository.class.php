@@ -381,11 +381,10 @@ class FileRepository extends Grid {
             }
 
             $transactionStarted = !($this->dbh->commit());
+            $uplID = (is_int($result)) ? $result : (int)$_POST[$this->getTableName()][$this->getPK()];
 
             if ($mode == QAL::INSERT) {
-                $uplID = (is_int($result)) ? $result : (int)$_POST[$this->getTableName()][$this->getPK()];
                 $args = array($uplID, $data['upl_publication_date']);
-
                 $this->dbh->call('proc_update_dir_date', $args);
             }
 
