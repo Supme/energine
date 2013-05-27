@@ -5,9 +5,10 @@ var LoginForm = new Class({
 
         window.addEvent('domready', function() {
             var vkAuth = $('vkAuth');
-            vkAuth.addEvent('click', function() {
-                VK.Auth.login(vkAuth);
-            });
+            if(vkAuth)
+                vkAuth.addEvent('click', function() {
+                    VK.Auth.login(vkAuth);
+                });
         });
     }
 });
