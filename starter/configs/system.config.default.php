@@ -11,7 +11,7 @@ return array(
     'project' => 'Energine 2.11.4',
 
     // путь к директории setup текущего используемого ядра
-    'setup_dir' => ($energine_release = '/var/www/energine/tags/2.11.4') . '/setup',
+    'setup_dir' => ($energine_release = '/var/www/energine/tags/2.11.5') . '/setup',
 
     // список подключенных модулей ядра в конкретном проекте
     // ключи массива - названия модулей, значения - абсолютные пути к месторасположению
