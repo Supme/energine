@@ -8,10 +8,10 @@
 return array(
 
     // название проекта
-    'project' => 'Energine 2.11.4',
+    'project' => 'Energine 2.11.7',
 
     // путь к директории setup текущего используемого ядра
-    'setup_dir' => ($energine_release = '/var/www/energine/tags/2.11.4') . '/setup',
+    'setup_dir' => ($energine_release = '/var/www/energine/tags/2.11.7') . '/setup',
 
     // список подключенных модулей ядра в конкретном проекте
     // ключи массива - названия модулей, значения - абсолютные пути к месторасположению
