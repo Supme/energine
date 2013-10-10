@@ -330,7 +330,12 @@ class Component extends DBWorker implements IBlock {
             }
 
             if ($csp = $this->getConfig()->getCurrentStateParams()) {
-                $this->stateParams = array_merge($this->stateParams, $csp);
+                if($this->stateParams){
+                    $this->stateParams = array_merge($this->stateParams, $csp);
+                }
+                else {
+                    $this->stateParams = $csp;
+                }
             }
         }
 
@@ -377,7 +382,7 @@ class Component extends DBWorker implements IBlock {
      * @final
      * @return void
      */
-    final public function run() {
+    public function run() {
         if (!method_exists($this, $this->getState())) {
             throw new SystemException(
                 'ERR_DEV_NO_ACTION',
