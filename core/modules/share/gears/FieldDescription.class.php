@@ -17,8 +17,7 @@
  * @subpackage kernel
  * @author dr.Pavka
  */
-class FieldDescription extends DBWorker implements Iterator
-{
+class FieldDescription extends DBWorker implements Iterator {
     /**
      * Используется в функциях итерации
      * Инициализируется в rewind
@@ -276,8 +275,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param string $name имя поля
      * @return void
      */
-    public function __construct($name = self::EMPTY_FIELD_NAME)
-    {
+    public function __construct($name = self::EMPTY_FIELD_NAME) {
         parent::__construct();
 
         $this->name = $name;
@@ -300,8 +298,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param array $fieldInfo
      * @return boolean
      */
-    public function loadArray(array $fieldInfo)
-    {
+    public function loadArray(array $fieldInfo) {
         $result = true;
         foreach ($fieldInfo as $propName => $propValue) {
             switch ($propName) {
@@ -331,8 +328,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param SimpleXMLElement $fieldInfo
      * @return boolean
      */
-    public function loadXML(SimpleXMLElement $fieldInfo)
-    {
+    public function loadXML(SimpleXMLElement $fieldInfo) {
         $result = true;
         foreach ($fieldInfo->attributes() as $attrName => $attrValue) {
             $attrName = (string)$attrName;
@@ -343,6 +339,11 @@ class FieldDescription extends DBWorker implements Iterator
                     break;
                 case 'type':
                     $this->setSystemType($attrValue);
+                    if (($this->getType() == self::FIELD_TYPE_SELECT)
+                        && !empty($fieldInfo->options->option)
+                    ) {
+                        $this->loadAvailableXMLValues($fieldInfo->options->option);
+                    }
                     break;
                 case 'length':
                     $this->setLength($attrValue);
@@ -366,8 +367,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return string
      */
-    public function getName()
-    {
+    public function getName() {
         return $this->name;
     }
 
@@ -378,8 +378,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param string $systemName
      * @return void
      */
-    public function setSystemName($systemName)
-    {
+    public function setSystemName($systemName) {
         $this->systemName = $systemName;
     }
 
@@ -389,8 +388,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return int | true
      */
-    public function getLength()
-    {
+    public function getLength() {
         return $this->length;
     }
 
@@ -401,8 +399,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param int $length
      * @return FieldDescription
      */
-    public function setLength($length)
-    {
+    public function setLength($length) {
         $this->length = (int)$length;
         return $this;
     }
@@ -413,8 +410,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return string
      */
-    public function getSystemName()
-    {
+    public function getSystemName() {
         return $this->systemName;
     }
 
@@ -425,8 +421,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param string $type
      * @return FieldDescription
      */
-    public function setType($type)
-    {
+    public function setType($type) {
         $this->type = (string)$type;
         $this->setProperty('sort', 0);
         switch ($this->type) {
@@ -443,8 +438,7 @@ class FieldDescription extends DBWorker implements Iterator
             case self::FIELD_TYPE_EMAIL:
                 if (($this->getPropertyValue('nullable') === false) || is_null($this->getPropertyValue('nullable'))) {
                     $regexp = '/^(([^()<>@,;:\\\".\[\] ]+)|("[^"\\\\\r]*"))((\.[^()<>@,;:\\\".\[\] ]+)|(\."[^"\\\\\r]*"))*@(([a-z0-9][a-z0-9\-]+)*[a-z0-9]+\.)+[a-z]{2,}$/i';
-                }
-                else {
+                } else {
                     $regexp = '/^((([^()<>@,;:\\\".\[\] ]+)|("[^"\\\\\r]*"))((\.[^()<>@,;:\\\".\[\] ]+)|(\."[^"\\\\\r]*"))*@(([a-z0-9][a-z0-9\-]+)*[a-z0-9]+\.)+[a-z]{2,})?$/i';
                 }
                 $this->setProperty('pattern', $regexp);
@@ -456,8 +450,7 @@ class FieldDescription extends DBWorker implements Iterator
             case  self::FIELD_TYPE_PHONE:
                 if ($this->getPropertyValue('nullable') === false || is_null($this->getPropertyValue('nullable'))) {
                     $regexp = '/^[0-9\(\)\+\-\. ]{5,25}$/';
-                }
-                else {
+                } else {
                     $regexp = '/^([0-9\(\)\+\-\. ]{5,25})?$/';
                 }
                 $this->setProperty('sort', 1);
@@ -477,7 +470,7 @@ class FieldDescription extends DBWorker implements Iterator
                 $this->setProperty('deleteFileTitle', $this->translate('MSG_DELETE_FILE'));
                 break;*/
             case self::FIELD_TYPE_FILE:
-            //case self::FIELD_TYPE_PFILE:
+                //case self::FIELD_TYPE_PFILE:
             case self::FIELD_TYPE_VIDEO:
                 if ($this->getPropertyValue('nullable') === false) {
                     $this->setProperty('pattern', '/^.+$/');
@@ -494,8 +487,7 @@ class FieldDescription extends DBWorker implements Iterator
                     $this->setProperty('pattern', '/^.+$/');
                     //$this->setProperty('message', $this->translate('MSG_FIELD_IS_NOT_NULL'));
                     $this->setProperty('message', 'MSG_FIELD_IS_NOT_NULL');
-                }
-                else {
+                } else {
                     //Убирается на случай если мы приводим к этому типу
                     //по хорошему такое нужно для всех типов делать
                     $this->removeProperty('pattern');
@@ -511,8 +503,7 @@ class FieldDescription extends DBWorker implements Iterator
                     (is_null($this->getPropertyValue('nullable')))
                 ) {
                     $regexp = '/^[0-9,\.]{1,' . $this->length . '}$/';
-                }
-                else {
+                } else {
                     $regexp = '/^[0-9,\.]{0,' . $this->length . '}$/';
                 }
                 $this->setProperty('sort', 1);
@@ -538,8 +529,7 @@ class FieldDescription extends DBWorker implements Iterator
                         $regexp = '/^\d{1,7}$/';
                         //$message = $this->translate('MSG_BAD_INT_FORMAT_OR_NULL');
                         $message = 'MSG_BAD_INT_FORMAT_OR_NULL';
-                    }
-                    else {
+                    } else {
                         $regexp = '/^\d{0,7}$/';
                         //$message = $this->translate('MSG_BAD_INT_FORMAT');
                         $message = 'MSG_BAD_INT_FORMAT';
@@ -565,8 +555,7 @@ class FieldDescription extends DBWorker implements Iterator
                 if ($this->getPropertyValue('nullable') === false) {
                     //$regexp = '/^\d{4}\-\d{1,2}\-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}$/';
                     $regexp = '/^\d{4}\-\d{1,2}\-\d{1,2} \d{1,2}:\d{1,2}$/';
-                }
-                else {
+                } else {
                     $regexp = '/^(\d{4}\-\d{1,2}\-\d{1,2} \d{1,2}:\d{1,2})?$/';
                 }
                 $this->setProperty('sort', 1);
@@ -579,8 +568,7 @@ class FieldDescription extends DBWorker implements Iterator
             case self::FIELD_TYPE_TIME:
                 if ($this->getPropertyValue('nullable') === false) {
                     $regexp = '/^\d{1,2}:\d{1,2}(:\d{1,2})?$/';
-                }
-                else {
+                } else {
                     $regexp = '/^\d{1,2}:\d{1,2}(:\d{1,2})?$/';
                 }
                 $this->setProperty('pattern', $regexp);
@@ -593,8 +581,7 @@ class FieldDescription extends DBWorker implements Iterator
             case self::FIELD_TYPE_DATE:
                 if ($this->getPropertyValue('nullable') === false) {
                     $regexp = '/^\d{4}\-\d{1,2}\-\d{1,2}$/';
-                }
-                else {
+                } else {
                     $regexp = '/^(\d{4}\-\d{1,2}\-\d{1,2})?$/';
                 }
                 $this->setProperty('sort', 1);
@@ -627,8 +614,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return string
      */
-    public function getType()
-    {
+    public function getType() {
         return $this->type;
     }
 
@@ -640,8 +626,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param string $systemType
      * @return void
      */
-    public function setSystemType($systemType)
-    {
+    public function setSystemType($systemType) {
         $this->systemType = $systemType;
         $this->setType(self::convertType($systemType, $this->name, $this->length, $this->additionalProperties));
     }
@@ -652,8 +637,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return string
      */
-    public function getSystemType()
-    {
+    public function getSystemType() {
         return $this->systemType;
     }
 
@@ -664,8 +648,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param int $mode
      * @return FieldDescription
      */
-    public function setMode($mode)
-    {
+    public function setMode($mode) {
         $this->mode = $mode;
         return $this;
     }
@@ -676,8 +659,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return int
      */
-    public function getMode()
-    {
+    public function getMode() {
         return $this->mode;
     }
 
@@ -688,8 +670,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param int $rights
      * @return void
      */
-    public function setRights($rights)
-    {
+    public function setRights($rights) {
         $this->rights = $rights;
     }
 
@@ -699,8 +680,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return int
      */
-    public function getRights()
-    {
+    public function getRights() {
         return $this->rights;
     }
 
@@ -713,12 +693,11 @@ class FieldDescription extends DBWorker implements Iterator
      * @param mixed $value
      * @return FieldDescription
      */
-    public function setProperty($name, $value)
-    {
+    public function setProperty($name, $value) {
+        $name = strtolower($name);
         if (in_array($name, array('title', 'message', 'tabName'))) {
             $value = $this->translate($value);
-        }
-        elseif (is_scalar($value) && (strpos($value, 'trans(') !== false)) {
+        } elseif (is_scalar($value) && (strpos($value, 'trans(') !== false)) {
             $value = $this->translate(str_replace(array('trans', '(', ')'), '', $value));
         }
         $this->additionalProperties[$name] = $value;
@@ -732,8 +711,8 @@ class FieldDescription extends DBWorker implements Iterator
      * @param string $name
      * @return FieldDescription
      */
-    public function removeProperty($name)
-    {
+    public function removeProperty($name) {
+        $name = strtolower($name);
         unset($this->additionalProperties[$name]);
         return $this;
     }
@@ -744,8 +723,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return array
      */
-    public function getPropertyNames()
-    {
+    public function getPropertyNames() {
         return array_keys($this->additionalProperties);
     }
 
@@ -756,8 +734,8 @@ class FieldDescription extends DBWorker implements Iterator
      * @param string $name
      * @return mixed
      */
-    public function getPropertyValue($name)
-    {
+    public function getPropertyValue($name) {
+        $name = strtolower($name);
         $value = null;
         if (isset($this->additionalProperties[$name])) {
             $value = $this->additionalProperties[$name];
@@ -773,29 +751,26 @@ class FieldDescription extends DBWorker implements Iterator
      * @return string
      * @static
      */
-    static public function convertType($systemType, $name, $length = 1, $props = array())
-    {
+    static public function convertType($systemType, $name, $length = 1, $props = array()) {
         switch ($systemType) {
             case DBA::COLTYPE_STRING:
                 if (strpos($name, '_password')) {
                     $result = self::FIELD_TYPE_PWD;
-                }
-                elseif (strpos($name, '_email')) {
+                } elseif (strpos($name, '_email')) {
                     $result = self::FIELD_TYPE_EMAIL;
-                }
-                elseif (strpos($name, '_phone')) {
+                } elseif (strpos($name, '_phone')) {
                     $result = self::FIELD_TYPE_PHONE;
-                }
-                /*elseif (strpos($name, '_img')) {
+                } /*elseif (strpos($name, '_img')) {
                     $result = self::FIELD_TYPE_IMAGE;
                 }*/
                 elseif (strpos($name, '_file') || strpos($name, '_img')) {
                     $result = self::FIELD_TYPE_FILE;
-                }
+                } /*elseif (strpos($name, '_pfile')) {
+                    $result = self::FIELD_TYPE_PFILE;
+                }*/
                 elseif (strpos($name, '_video')) {
                     $result = self::FIELD_TYPE_VIDEO;
-                }
-                else {
+                } else {
                     $result = self::FIELD_TYPE_STRING;
                 }
                 break;
@@ -809,23 +784,19 @@ class FieldDescription extends DBWorker implements Iterator
                     } else {
                         $result = self::FIELD_TYPE_BOOL;
                     }
-                }
-                    // обрабатываем внешний ключ
+                } // обрабатываем внешний ключ
                 elseif (isset($props['key']) && is_array($props['key'])) {
                     $result = (strpos($name, '_multi')) ? self::FIELD_TYPE_MULTI : self::FIELD_TYPE_SELECT;
-                }
-                else {
+                } else {
                     $result = self::FIELD_TYPE_INT;
                 }
                 break;
             case DBA::COLTYPE_TEXT:
                 if (strpos($name, '_rtf')) {
                     $result = self::FIELD_TYPE_HTML_BLOCK;
-                }
-                elseif (strpos($name, '_code')) {
+                } elseif (strpos($name, '_code')) {
                     $result = self::FIELD_TYPE_CODE;
-                }
-                else {
+                } else {
                     $result = self::FIELD_TYPE_TEXT;
                 }
                 break;
@@ -855,10 +826,12 @@ class FieldDescription extends DBWorker implements Iterator
      * @return FieldDescription
      * @static
      */
-    public static function intersect(FieldDescription $configFieldDescription, FieldDescription $dbFieldDescription)
-    {
+    public static function intersect(FieldDescription $configFieldDescription, FieldDescription $dbFieldDescription) {
         $type = $configFieldDescription->getType();
         $mode = $configFieldDescription->getMode();
+        if (!is_null($av = $configFieldDescription->getAvailableValues())) {
+            $dbFieldDescription->setAvailableValues($av);
+        }
         if ($dbFieldDescription->getPropertyValue('index') == 'PRI') {
             $dbFieldDescription->setType(FieldDescription::FIELD_TYPE_HIDDEN);
         }
@@ -894,8 +867,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @param mixed $data
      * @return boolean
      */
-    public function validate($data)
-    {
+    public function validate($data) {
         if (is_int($this->length) && strlen($data) > $this->length) {
             return false;
         }
@@ -911,8 +883,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return boolean
      */
-    public function isMultilanguage()
-    {
+    public function isMultilanguage() {
         return $this->isMultilanguage;
     }
 
@@ -920,8 +891,7 @@ class FieldDescription extends DBWorker implements Iterator
      * Устанавливает флаг мультиязычности
      * @return void
      */
-    public function markMultilanguage()
-    {
+    public function markMultilanguage() {
         $this->isMultilanguage = true;
     }
 
@@ -935,10 +905,9 @@ class FieldDescription extends DBWorker implements Iterator
      * @return void
      * @see QAL::select()
      */
-    public function loadAvailableValues($values, $keyName, $valueName)
-    {
-        $result = array();
-        if (is_array($values)) {
+    public function loadAvailableValues($values, $keyName, $valueName) {
+        if (is_array($values) && empty($this->availableValues)) {
+            $result = array();
             foreach ($values as $row) {
                 $key = $row[$keyName];
                 $value = $row[$valueName];
@@ -951,10 +920,39 @@ class FieldDescription extends DBWorker implements Iterator
                     'attributes' => (empty($row) ? false : $row)
                 );
             }
+            $this->availableValues = $result;
+        }
+        return $this;
+    }
+
+    /**
+     * Загружает возможные значения из
+     * конфига компонента.
+     * <field type="select">
+     *      <options>
+     *          <option id="1" [attributes]>TXT_1</option>
+     *          <option id="2" [attributes]>TXT_2</option>
+     *      </options>
+     * </field>
+     *
+     * @param SimpleXMLElement $options
+     * @access private
+     */
+    private function loadAvailableXMLValues(SimpleXMLElement $options) {
+        $result = array();
+        foreach ($options as $option) {
+            $optAttributes = array();
+            foreach ($option->attributes() as $optAttrName => $optAttrValue) {
+                if ((string)$optAttrName != 'id') {
+                    $optAttributes[(string)$optAttrName] = (string)$optAttrValue;
+                }
+            }
+            $result[(int)$option['id']] = array(
+                'value' => $this->translate((string)$option),
+                'attributes' => $optAttributes
+            );
         }
         $this->availableValues = $result;
-
-        return $this;
     }
 
     /**
@@ -963,9 +961,20 @@ class FieldDescription extends DBWorker implements Iterator
      * @access public
      * @return array
      */
-    public function &getAvailableValues()
-    {
+    public function &getAvailableValues() {
         return $this->availableValues;
+    }
+
+    /**
+     * Устанавливает набор возможных значений поля.
+     *
+     * @param $av
+     * @access public
+     * @return FieldDescription
+     */
+    public function setAvailableValues($av) {
+        $this->availableValues = $av;
+        return $this;
     }
 
     /**
@@ -976,8 +985,7 @@ class FieldDescription extends DBWorker implements Iterator
      * @static
      */
 
-    public static function computeRights($methodRights, $RORights = null, $FCRights = null)
-    {
+    public static function computeRights($methodRights, $RORights = null, $FCRights = null) {
         //Если уровень прав не указан, берем права документа
         $RORights = is_null($RORights) ? $methodRights : $RORights;
         $FCRights = is_null($FCRights) ? $methodRights : $FCRights;
@@ -986,43 +994,34 @@ class FieldDescription extends DBWorker implements Iterator
         //Если права на чтение на контрол меньше чем права на метод, то контрол - невидим
         if ($methodRights < $RORights) {
             $result = FieldDescription::FIELD_MODE_NONE;
-        }
-            //Если права на чтение на контрол больше или равны правам на метод, и права на запись меньше  - просто выводится текст контрола
-        elseif ($methodRights >= $RORights && $methodRights < $FCRights)
-        {
+        } //Если права на чтение на контрол больше или равны правам на метод, и права на запись меньше  - просто выводится текст контрола
+        elseif ($methodRights >= $RORights && $methodRights < $FCRights) {
             $result = FieldDescription::FIELD_MODE_READ;
-        }
-        elseif ($methodRights >= $FCRights)
-        {
+        } elseif ($methodRights >= $FCRights) {
             $result = FieldDescription::FIELD_MODE_EDIT;
         }
 
         Return $result;
     }
 
-    public function current()
-    {
+    public function current() {
         return $this->additionalProperties[$this->additionalPropertiesNames[$this->propertiesIndex]];
     }
 
-    public function key()
-    {
+    public function key() {
         return $this->additionalPropertiesNames[$this->propertiesIndex];
     }
 
-    public function next()
-    {
+    public function next() {
         $this->propertiesIndex++;
     }
 
-    public function rewind()
-    {
+    public function rewind() {
         $this->additionalPropertiesNames = array_keys($this->additionalProperties);
         $this->propertiesIndex = 0;
     }
 
-    public function valid()
-    {
+    public function valid() {
         return isset($this->additionalPropertiesNames[$this->propertiesIndex]);
     }
 }
