@@ -46,16 +46,18 @@
                     <xsl:when test="document/@debug=1">
                         <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-debug.js"></script>
                         <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-more-debug.js"></script>
+                        <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-ext-debug.js"></script>
                     </xsl:when>
                     <xsl:otherwise>
                         <script type="text/javascript" src="{$STATIC_URL}scripts/mootools.js"></script>
                         <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-more.js"></script>
+                        <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-ext.js"></script>
                     </xsl:otherwise>
                 </xsl:choose>
         		<script type="text/javascript" src="{$STATIC_URL}scripts/Energine.js"></script>
 
                 <script type="text/javascript">
-                    $extend(Energine, {
+                    Object.append(Energine, {
                     <xsl:if test="document/@debug=1">
                         debug :true,
                     </xsl:if>
@@ -80,39 +82,37 @@
                         var <xsl:for-each select="$COMPONENTS[recordset]/javascript[behavior[@name!='PageEditor']]"><xsl:value-of select="generate-id(../recordset)"/><xsl:if test="position() != last()">,</xsl:if></xsl:for-each>;
                     </xsl:if>
                     window.addEvent('domready', function () {
-                        var safeConsoleError = function(e){
-                        if (window['console'] <xsl:text disable-output-escaping="yes">&amp;&amp;</xsl:text> console['error']) {
-                            console.error(e);
-                            }
-                        };
         				<xsl:if test="$COMPONENTS[@componentAction='showPageToolbar']">
                             try {
                             <xsl:variable name="PAGE_TOOLBAR" select="$COMPONENTS[@componentAction='showPageToolbar']"></xsl:variable>
                             var pageToolbar = new <xsl:value-of select="$PAGE_TOOLBAR/javascript/behavior/@name" />('<xsl:value-of select="$BASE"/><xsl:value-of select="$LANG_ABBR"/><xsl:value-of select="$PAGE_TOOLBAR/@single_template" />', <xsl:value-of select="$ID" />, '<xsl:value-of select="$PAGE_TOOLBAR/toolbar/@name"/>', [
-                            <xsl:for-each select="$PAGE_TOOLBAR/toolbar/control">
-                                {
+                            <xsl:for-each select="$PAGE_TOOLBAR/toolbar/control">{
                                 <xsl:for-each select="@*[name()!='mode']">
                                     '<xsl:value-of select="name()"/>':'<xsl:value-of select="."/>'
                                     <xsl:if test="position()!=last()">,</xsl:if>
-                                </xsl:for-each>
-                                }<xsl:if test="position()!=last()">,</xsl:if></xsl:for-each>
+                                </xsl:for-each>}<xsl:if test="position()!=last()">,</xsl:if></xsl:for-each>
                             ]);
                             }
                             catch (e) {
                                 safeConsoleError(e);
                             }
         				</xsl:if>
-                        <xsl:for-each select="$COMPONENTS[@componentAction!='showPageToolbar']/javascript/behavior[@name!='PageEditor']">
-                            <xsl:variable name="objectID" select="generate-id(../../recordset[not(@name)])"/>
-                            if($('<xsl:value-of select="$objectID"/>')){
-                                try {
-                                <xsl:value-of select="$objectID"/> = new <xsl:value-of select="@name"/>($('<xsl:value-of select="$objectID"/>'));
-                                }
-                                catch (e) {
-                                    safeConsoleError(e);
-                                }
-                            }
-        				</xsl:for-each>
+
+                                            Object.each({<xsl:for-each select="$COMPONENTS[@componentAction!='showPageToolbar']/javascript/behavior[@name!='PageEditor']">
+                                                '<xsl:value-of select="generate-id(../../recordset[not(@name)])"/>':'<xsl:value-of select="@name"/>'<xsl:if
+                                            test="position()!=last()">,</xsl:if>
+                                            </xsl:for-each>}, function(className, componentID){
+                                                try {
+                                                    var component;
+                                                    if((component = document.getElementById(componentID)) <xsl:text disable-output-escaping="yes">&amp;&amp;</xsl:text> window[className]){
+                                                        window[componentID] = new window[className](component);
+                                                    }
+                                                }
+                                                catch (e) {
+                                                    safeConsoleError(e);
+                                                }
+                                            });
+
                         <xsl:if test="$COMPONENTS/javascript/behavior[@name='PageEditor']">
                             <xsl:if test="position()=1">
                                 <xsl:variable name="objectID" select="generate-id($COMPONENTS[javascript/behavior[@name='PageEditor']]/recordset)"/>
@@ -223,15 +223,17 @@
             <xsl:when test="document/@debug=1">
                 <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-debug.js"></script>
                 <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-more-debug.js"></script>
+                <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-ext-debug.js"></script>
             </xsl:when>
             <xsl:otherwise>
                 <script type="text/javascript" src="{$STATIC_URL}scripts/mootools.js"></script>
                 <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-more.js"></script>
+                <script type="text/javascript" src="{$STATIC_URL}scripts/mootools-ext.js"></script>
             </xsl:otherwise>
         </xsl:choose>
         <script type="text/javascript" src="{$STATIC_URL}scripts/Energine.js"></script>
         <script type="text/javascript">
-            $extend(Energine, {
+            Object.append(Energine, {
             <xsl:if test="document/@debug=1">'debug' :true,</xsl:if>
             'base' : '<xsl:value-of select="$BASE"/>',
             'static' : '<xsl:value-of select="$STATIC_URL"/>',
@@ -252,8 +254,12 @@
             </xsl:if>
             window.addEvent('domready', function () {
                 var safeConsoleError = function(e){
-                if (window['console'] <xsl:text disable-output-escaping="yes">&amp;&amp;</xsl:text> console['error']) {
-                    console.error(e);
+                    if (window['console'] <xsl:text disable-output-escaping="yes">&amp;&amp;</xsl:text> console['error']) {
+                        if (Browser.chrome <xsl:text disable-output-escaping="yes">&amp;&amp;</xsl:text> instanceOf(e, TypeError) <xsl:text disable-output-escaping="yes">&amp;&amp;</xsl:text> Energine.debug) {
+                            console.error(e.stack);
+                        } else {
+                            console.error(e);
+                        }
                     }
                 };
                 <xsl:if test="$COMPONENTS[@componentAction='showPageToolbar']">
