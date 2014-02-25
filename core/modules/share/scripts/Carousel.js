@@ -1512,6 +1512,12 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
      */
     isExtern: true,
 
+    /**
+     * Playlist items.
+     * @type {Elements}
+     */
+    items: new Elements(),
+
     // constructor
     initialize: function (element, itemSelector) {
         this.itemSelector = itemSelector;
@@ -1554,10 +1560,77 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
 });
 
 /**
+ * Playlist, that gets the items asynchronously from the server.
+ *
+ * @constructor
+ * @param {string} src Data source.
+ * @param {number} N Total amount of items in playlist.
+ */
+CarouselPlaylist.Ajax = new Class(/** @lends CarouselPlaylist.Ajax# */{
+    Extends: CarouselPlaylist,
+
+    /**
+     * Number of loaded items.
+     * @type {number}
+     */
+    NLoaded: 0,
+
+    /**
+     * Request object.
+     * @type {Request}
+     */
+    request: new Request(),
+
+    // constructor
+    initialise: function(src, N) {
+        this.items.length = N;
+
+        this.request.url = src;
+        this.request.link = 'chain';
+        this.request.addEvents({
+            success: function(response) {
+                console.log(response);
+
+                for (var n = 0; n < response.length; n++) {
+                    this.items[this.NLoaded+n] = response[n];
+                }
+                this.NLoaded += response.length;
+            }.bind(this),
+            failure: function(err) {
+                console.log(err);
+
+                /**
+                 * Fired by failure loading of items from server.
+                 * @event CarouselPlaylist.Ajax#stop
+                 */
+                this.fireEvent('stop');
+            }
+        });
+    },
+
+    /**
+     * Load N items.
+     * @param {number} N Number of items that should be loaded from the server.
+     */
+    loadItems: function(N) {
+        if (this.NLoaded == this.items.length) {
+            console.warn('All items are already loaded!');
+            return;
+        }
+        if (this.NLoaded + N > this.items.length) {
+            N = this.items.length - this.NLoaded;
+        }
+
+        this.request.send(this.NLoaded, this.NLoaded+N);
+        console.log('loaded: ' + this.NLoaded + ' items');
+    }
+});
+
+/**
  * Connects an Carousel objects and attach events to them. From MooTools it implements: Events.
  *
  * @throws {string} Not enough arguments!
- * @throws {string} Second argument must be an Array of Carousel objects!
+ * @throws {string} First argument must be an Array of Carousel objects!
  * @throws {string} Element #{number} in the array is not instance of Carousel!
  * @throws {string} Carousels can not be connected, because of different amount of items in the playlists!
  *
@@ -1574,7 +1647,7 @@ var CarouselConnector = new Class(/** @lends CarouselConnector# */{
             throw 'Not enough arguments!';
         }
         if (!(carousels instanceof Array)) {
-            throw 'Second argument must be an Array of Carousel objects!';
+            throw 'First argument must be an Array of Carousel objects!';
         }
         for (n = 0; n < carousels.length; n++) {
             if (!(carousels[n] instanceof CarouselFactory)) {
