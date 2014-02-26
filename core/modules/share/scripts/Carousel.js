@@ -17,7 +17,7 @@
  * @author Valerii Zinchenko
  * @author Pavel Dubenko
  *
- * @version 2.1.8
+ * @version 2.2.0
  */
 
 /**
@@ -309,7 +309,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
     scrollTo: function (id) {
         // Check whether the desired item ID is visible in the carousel. If it is, then do not scroll.
         for (var n = 0; n < this.options.NVisibleItems; n++) {
-            if (this.wrapIndices(this.firstVisibleItemID + n, 0, this.options.playlist.NItems) == id) {
+            if (wrapIndices(this.firstVisibleItemID + n, 0, this.options.playlist.NItems) == id) {
                 this.setActiveItem(id);
                 return;
             }
@@ -345,13 +345,10 @@ var ACarousel = new Class(/** @lends ACarousel# */{
     },
 
     Protected: {
-        // Abstract
-        // ====================
         /**
          * Prepare the carousel to the scrolling.
          *
          * @memberOf ACarousel#
-         * @abstract
          * @protected
          */
         prepareScrolling: function() {
@@ -372,13 +369,14 @@ var ACarousel = new Class(/** @lends ACarousel# */{
             var N = this.options.NVisibleItems + this.options.scrollStep;
             this.effects[0] = this.createEffect(this.options.scrollDirection, -this.length * this.options.scrollStep, this.length, N);
             this.effects[1] = this.createEffect(this.options.scrollDirection, 0, this.length, N);
+
+            this.specificPreparation();
         },
 
         /**
          * Prepare items for scrolling.
          *
          * @memberOf ACarousel#
-         * @abstract
          * @protected
          */
         prepareItems: function() {
@@ -389,6 +387,19 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 it.setStyle(this.options.scrollDirection, -this.length);
             }, this);
         },
+
+        // Abstract
+        // ====================
+        /**
+         * Additional specific preparation to the scrolling relative to specific carousel type.
+         *
+         * @see ACarousel#prepareScrolling
+         *
+         * @memberOf ACarousel#
+         * @abstract
+         * @protected
+         */
+        specificPreparation: function() {},
 
         /**
          * Get the items, that will become visible after scrolling.
@@ -412,6 +423,17 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @param {number} scrollNTimes Scrolling multiplier.
          */
         calcFirstItemID: function(direction, scrollNTimes) {},
+
+        /**
+         * Calculate how many scroll steps and in which direction should the carousel scroll to reach the desired item ID.
+         *
+         * @memberOf ACarousel#
+         * @abstract
+         * @protected
+         * @param {number} id Desired item ID.
+         * @return {{NScrolls: number, direction: number}}
+         */
+        calcScrolls: function(id) {},
 
         /**
          * Get the effects, that will be applied to scrolled items.
@@ -529,17 +551,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         },
 
         /**
-         * Calculate how many scroll steps and in which direction should the carousel scroll to reach the desired item ID.
-         *
-         * @memberOf ACarousel#
-         * @abstract
-         * @protected
-         * @param {number} id Desired item ID.
-         * @return {{NScrolls: number, direction: number}}
-         */
-        calcScrolls: function(id) {},
-
-        /**
          * Apply styles to the carousel and his elements.
          * @memberOf ACarousel#
          * @protected
@@ -588,7 +599,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @throws {string} scrollNTimes must be > 0
          *
          * @memberOf ACarousel#
-         * @abstract
          * @protected
          * @param {number} direction Defines the scroll direction. It can be 1 or -1 to scroll forward and backward respectively.
          * @param {number} [scrollNTimes = 1] Defines how many scrolls must be done by one call of scrolling.
@@ -619,14 +629,14 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 // Checks whether the selected item is visible
                 var isSelectedVisible = false;
                 for (var n = 0; n < this.options.NVisibleItems; n++) {
-                    if (this.wrapIndices(this.firstVisibleItemID + n, 0, this.options.playlist.NItems) == this.currentActiveID) {
+                    if (wrapIndices(this.firstVisibleItemID + n, 0, this.options.playlist.NItems) == this.currentActiveID) {
                         isSelectedVisible = true;
                         break;
                     }
                 }
                 // If the selected item is not visible, then the leftmost or rightmost visible item will be selected
                 if (!isSelectedVisible) {
-                    this.selectItem(this.wrapIndices(
+                    this.selectItem(wrapIndices(
                         (direction == 1)
                             ? this.firstVisibleItemID
                             : this.firstVisibleItemID + this.options.NVisibleItems - 1,
@@ -772,39 +782,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 console.warn('The value for \"' + varName + '\" is incorrect. Its value reset to', values[0] + '.');
             }
             return values[0];
-        },
-
-        /**
-         * Wrap an index between lower and upper limits.
-         *
-         * @throws {string} Arguments must be: maxID != 0 minID >= 0 maxID > minID
-         *
-         * @memberOf ACarousel#
-         * @protected
-         * @param {number} id Index that must be wrapped.
-         * @param {number} minID Lower limit.
-         * @param {number} maxID Upper limit.
-         * @param {boolean} [toWrap = true] Determines, will the id wrapped (true) or cropped (false) by limits.
-         * @returns {number} Wrapped id.
-         *
-         * @example
-         * wrapIndices(-2, 0, 8, true)  == 6
-         * wrapIndices(-2, 0, 8, false) == 0
-         */
-        wrapIndices: function(id, minID, maxID, toWrap) {
-            if (maxID === 0 || minID < 0 || maxID < minID) {
-                throw 'Arguments must be: maxID != 0 minID >= 0 maxID > minID';
-            }
-            if (toWrap === undefined) {
-                toWrap = true;
-            }
-            if (toWrap) {
-                return (id >= maxID) ? id - maxID * Math.floor(id / maxID) :
-                    (id < minID) ? id + maxID * Math.ceil(Math.abs(id) / maxID) : id;
-            } else {
-                return (id >= maxID) ? maxID :
-                    (id < minID) ? minID : id;
-            }
         }
     }
 });
@@ -998,13 +975,11 @@ CarouselFactory.Types = {
 
         Protected: {
             /**
-             * Extends the parent [prepareScrolling]{@link ACarousel#prepareScrolling} method.
-             * @memberOf ACarousel#
+             * Implementation of the abstract [specificPreparation]{@link ACarousel#specificPreparation} method.
+             * @memberOf CarouselFactory.Types.Loop#
              * @protected
              */
-            prepareScrolling: function() {
-                this.parent();
-
+            specificPreparation: function() {
                 // If the amount of items that will be scrolled in loop is greater than the total number of items,
                 // then make clones of all items.
                 if (this.options.NVisibleItems + this.options.scrollStep > this.options.playlist.NItems) {
@@ -1013,11 +988,11 @@ CarouselFactory.Types = {
             },
 
             /**
-             * Implements the parent abstract [getNewVisibleItems]{@link ACarousel#prepareScrolling} method.
+             * Implementation of the abstract [getNewVisibleItems]{@link ACarousel#prepareScrolling} method.
              *
              * @throws {string} Scrolling direction must be -1 or 1 but received "{number}".
              *
-             * @memberOf ACarousel#
+             * @memberOf CarouselFactory.Types.Loop#
              * @protected
              * @param {number} direction Scrolling direction.
              * @param {number} scrollNTimes Scrolling multiplier.
@@ -1028,18 +1003,15 @@ CarouselFactory.Types = {
                 // new first visible ID in this.items after scrolling
                     newItemID,
                 // helper variables
-                    itemPosition,
                     itemShift,
                     n;
 
                 if (direction === 1) {
                     newItemID = this.firstVisibleItemID + this.options.NVisibleItems;
                     itemShift = this.itemShifts[0];
-                    itemPosition = 'bottom';
                 } else if (direction === -1) {
                     newItemID = this.firstVisibleItemID - this.options.scrollStep * scrollNTimes;
                     itemShift = this.itemShifts[1] - ((scrollNTimes == 1) ? 0 : this.length * (scrollNTimes - 1));
-                    itemPosition = 'top';
                 } else {
                     throw 'Scrolling direction must be -1 or 1 but received \"' + direction + '\"!';
                 }
@@ -1055,30 +1027,29 @@ CarouselFactory.Types = {
                 }
 
                 for (n = 0; n < this.options.scrollStep * scrollNTimes; n++) {
-                    newItems[n] = this.items[this.wrapIndices(newItemID + n, 0, this.items.length, true)].setStyle(this.options.scrollDirection, this.length * n + itemShift);
+                    newItems[n] = this.items[wrapIndices(newItemID + n, 0, this.items.length, true)].setStyle(this.options.scrollDirection, this.length * n + itemShift);
                 }
 
                 return newItems;
             },
 
             /**
-             * Implements the parent abstract [calcFirstItemID]{@link ACarousel#calcFirstItemID} method.
+             * Implementation of the abstract [calcFirstItemID]{@link ACarousel#calcFirstItemID} method.
              *
-             * @memberOf ACarousel#
+             * @memberOf CarouselFactory.Types.Loop#
              * @protected
              * @param {number} direction Scrolling direction.
              * @param {number} scrollNTimes Scrolling multiplier.
              */
             calcFirstItemID: function(direction, scrollNTimes) {
                 this.firstVisibleItemID += direction * this.options.scrollStep * scrollNTimes;
-                this.firstVisibleItemID = this.wrapIndices(this.firstVisibleItemID, 0, this.items.length, true);
+                this.firstVisibleItemID = wrapIndices(this.firstVisibleItemID, 0, this.items.length, true);
             },
 
             /**
-             * Implements the parent abstract [calcScrolls]{@link ACarousel#calcScrolls} method.
+             * Implementation of the abstract [calcScrolls]{@link ACarousel#calcScrolls} method.
              *
-             * @memberOf ACarousel#
-             * @abstract
+             * @memberOf CarouselFactory.Types.Loop#
              * @protected
              * @param {number} id Desired item ID.
              * @returns {{NScrolls: number, direction: number}}
@@ -1086,11 +1057,11 @@ CarouselFactory.Types = {
             calcScrolls: function(id) {
                 var NTimes,
                     direction = 1,
-                    diffFromLeft = this.wrapIndices(id - this.currentActiveID, 0, this.options.playlist.NItems),
+                    diffFromLeft = wrapIndices(id - this.currentActiveID, 0, this.options.playlist.NItems),
                     diffFromRight = this.options.playlist.NItems - diffFromLeft;
 
                 if (diffFromLeft <= diffFromRight) {
-                    NTimes = diffFromLeft - (this.wrapIndices(this.firstVisibleItemID + this.options.NVisibleItems, 0, this.options.playlist.NItems) - 1 - this.currentActiveID);
+                    NTimes = diffFromLeft - (wrapIndices(this.firstVisibleItemID + this.options.NVisibleItems, 0, this.options.playlist.NItems) - 1 - this.currentActiveID);
                 } else {
                     NTimes = diffFromRight - (this.currentActiveID - this.firstVisibleItemID);
                     direction = -1;
@@ -1104,9 +1075,9 @@ CarouselFactory.Types = {
             },
 
             /**
-             * Implements the parent abstract [getItemEffects]{@link ACarousel#getItemEffects} method.
+             * Implementation of the abstract [getItemEffects]{@link ACarousel#getItemEffects} method.
              *
-             * @memberOf ACarousel#
+             * @memberOf CarouselFactory.Types.Loop#
              * @protected
              * @param {number} direction Scrolling direction.
              * @param {number} scrollNTimes Scrolling multiplier.
@@ -1142,31 +1113,21 @@ CarouselFactory.Types = {
      * @param {Element} el Main element for the carousel.
      * @param {Object} [opts] [Options]{@link ACarousel#options} for the carousel.
      */
-    Line: (function() {
-        /**
-         * Defines whether the last scroll will made.
-         * @type {boolean}
-         * @memberOf CarouselFactory.Types.Line~
-         */
-        var isLast;
-
-        return new Class(/** @lends CarouselFactory.Types.Line# */{
+    Line: new Class(/** @lends CarouselFactory.Types.Line# */{
             Extends: ACarousel,
 
             effects: [{},{},{},{}],
 
             Protected: {
                 /**
-                 * Extends the parent [prepareScrolling]{@link ACarousel#prepareScrolling} method.
+                 * Implementation of the abstract [specificPreparation]{@link ACarousel#specificPreparation} method.
                  *
-                 * @fires CarouselFactory.Line#beginReached
+                 * @fires CarouselFactory.Types.Line#beginReached
                  *
-                 * @memberOf ACarousel#
+                 * @memberOf CarouselFactory.Types.Line#
                  * @protected
                  */
-                prepareScrolling: function() {
-                    this.parent();
-
+                specificPreparation: function() {
                     /**
                      * Last possible scroll step for limited scrolling.
                      * @type {number}
@@ -1179,7 +1140,7 @@ CarouselFactory.Types = {
 
                     /**
                      * Fired when the carousel has the begin reached.
-                     * @event CarouselFactory.Line#beginReached
+                     * @event CarouselFactory.Types.Line#beginReached
                      */
                     this.fireEvent('beginReached');
 
@@ -1191,15 +1152,15 @@ CarouselFactory.Types = {
                 },
 
                 /**
-                 * Implements the parent abstract [getNewVisibleItems]{@link ACarousel#prepareScrolling} method.
+                 * Implementation of the abstract [getNewVisibleItems]{@link ACarousel#prepareScrolling} method.
                  *
-                 * @fires CarouselFactory.Line#beginReached
-                 * @fires CarouselFactory.Line#endReached
+                 * @fires CarouselFactory.Types.Line#beginReached
+                 * @fires CarouselFactory.Types.Line#endReached
                  *
                  * @throws {string} Scrolling direction must be -1 or 1 but received "{number}".
                  * @throws {string} Carousel: The end is reached
                  *
-                 * @memberOf ACarousel#
+                 * @memberOf CarouselFactory.Types.Line#
                  * @protected
                  * @param {number} direction Scrolling direction.
                  * @param {number} scrollNTimes Scrolling multiplier.
@@ -1210,18 +1171,15 @@ CarouselFactory.Types = {
                     // new first visible ID in this.items after scrolling
                         newItemID,
                     // helper variables
-                        itemPosition,
                         itemShift,
                         n;
 
                     if (direction === 1) {
                         newItemID = this.firstVisibleItemID + this.options.NVisibleItems;
                         itemShift = this.itemShifts[0];
-                        itemPosition = 'bottom';
                     } else if (direction === -1) {
                         newItemID = this.firstVisibleItemID - this.options.scrollStep * scrollNTimes;
                         itemShift = this.itemShifts[1] - ((scrollNTimes == 1) ? 0 : this.length * (scrollNTimes - 1));
-                        itemPosition = 'top';
                     } else {
                         throw 'Scrolling direction must be -1 or 1 but received "' + direction + '".';
                     }
@@ -1231,17 +1189,21 @@ CarouselFactory.Types = {
                         (direction == 1)
                         /**
                          * Fired when the carousel has the end reached.
-                         * @event CarouselFactory.Line#endReached
+                         * @event CarouselFactory.Types.Line#endReached
                          */
                             ? this.fireEvent('endReached')
                             : this.fireEvent('beginReached');
                     }
                     // Check if last item effects are needed to be applied.
-                    isLast = (newItemID + this.options.scrollStep * scrollNTimes) > this.items.length || newItemID < 0;
+                    /**
+                     * Defines whether the last scroll will made.
+                     * @type {boolean}
+                     */
+                    this.isLast = (newItemID + this.options.scrollStep * scrollNTimes) > this.items.length || newItemID < 0;
 
                     // Gets new items
-                    if (isLast) {
-                        newItemID = this.wrapIndices(newItemID, 0, this.items.length, false);
+                    if (this.isLast) {
+                        newItemID = wrapIndices(newItemID, 0, this.items.length, false);
                         if (newItemID == 0) {
                             itemShift = this.itemShifts[2] - this.length * this.options.scrollStep * (scrollNTimes - 1);
                         }
@@ -1252,7 +1214,7 @@ CarouselFactory.Types = {
                         }
                     } else {
                         for (n = 0; n < this.options.scrollStep * scrollNTimes; n++) {
-                            newItems[n] = this.items[this.wrapIndices(newItemID + n, 0, this.items.length, true)].setStyle(this.options.scrollDirection, this.length * n + itemShift);
+                            newItems[n] = this.items[wrapIndices(newItemID + n, 0, this.items.length, true)].setStyle(this.options.scrollDirection, this.length * n + itemShift);
                         }
                     }
 
@@ -1260,25 +1222,24 @@ CarouselFactory.Types = {
                 },
 
                 /**
-                 * Implements the parent abstract [calcFirstItemID]{@link ACarousel#calcFirstItemID} method.
+                 * Implementation of the abstract [calcFirstItemID]{@link ACarousel#calcFirstItemID} method.
                  *
-                 * @memberOf ACarousel#
+                 * @memberOf CarouselFactory.Types.Line#
                  * @protected
                  * @param {number} direction Scrolling direction.
                  * @param {number} scrollNTimes Scrolling multiplier.
                  */
                 calcFirstItemID: function(direction, scrollNTimes) {
-                    this.firstVisibleItemID += direction * ((!isLast)
+                    this.firstVisibleItemID += direction * ((!this.isLast)
                         ? this.options.scrollStep * scrollNTimes
                         : this.lastScrollStep + this.options.scrollStep * (scrollNTimes - 1));
-                    this.firstVisibleItemID = this.wrapIndices(this.firstVisibleItemID, 0, this.items.length, false);
+                    this.firstVisibleItemID = wrapIndices(this.firstVisibleItemID, 0, this.items.length, false);
                 },
 
                 /**
-                 * Implements the parent abstract [calcScrolls]{@link ACarousel#calcScrolls} method.
+                 * Implementation of the abstract [calcScrolls]{@link ACarousel#calcScrolls} method.
                  *
-                 * @memberOf ACarousel#
-                 * @abstract
+                 * @memberOf CarouselFactory.Types.Line#
                  * @protected
                  * @param {number} id Desired item ID.
                  * @returns {{NScrolls: number, direction: number}}
@@ -1291,7 +1252,7 @@ CarouselFactory.Types = {
                         NTimes = this.options.playlist.NItems - 1;
                     }
                     if (direction == 1) {
-                        NTimes -= this.wrapIndices(this.firstVisibleItemID + this.options.NVisibleItems, 0, this.options.playlist.NItems) - 1 - this.currentActiveID;
+                        NTimes -= wrapIndices(this.firstVisibleItemID + this.options.NVisibleItems, 0, this.options.playlist.NItems) - 1 - this.currentActiveID;
                     } else {
                         NTimes -= this.currentActiveID - this.firstVisibleItemID;
                     }
@@ -1304,9 +1265,9 @@ CarouselFactory.Types = {
                 },
 
                 /**
-                 * Implements the parent abstract [getItemEffects]{@link ACarousel#getItemEffects} method.
+                 * Implementation of the abstract [getItemEffects]{@link ACarousel#getItemEffects} method.
                  *
-                 * @memberOf ACarousel#
+                 * @memberOf CarouselFactory.Types.Line#
                  * @protected
                  * @param {number} direction Scrolling direction.
                  * @param {number} scrollNTimes Scrolling multiplier.
@@ -1324,7 +1285,7 @@ CarouselFactory.Types = {
                         effects = this.createEffect(this.options.scrollDirection, -this.length * shift, this.length,
                             this.firstVisibleItemID + this.options.NVisibleItems + this.options.scrollStep * scrollNTimes);
                     } else {
-                        effects = this.effects[(isLast)
+                        effects = this.effects[(this.isLast)
                             ? ( (direction == 1) ? 2 : 3 )
                             : ( (direction == 1) ? 0 : 1 )
                             ];
@@ -1334,7 +1295,6 @@ CarouselFactory.Types = {
                 }
             }
         })
-    })()
 };
 
 /**
@@ -1518,6 +1478,12 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
      */
     items: new Elements(),
 
+    /**
+     * Number of loaded items.
+     * @type {number}
+     */
+    NCached: 0,
+
     // constructor
     initialize: function (element, itemSelector) {
         this.itemSelector = itemSelector;
@@ -1556,6 +1522,56 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
      */
     getHolder: function(){
         return this.items[0].getParent();
+    },
+
+    /**
+     * Load N items.
+     * @param {number} beginID Item ID from which the counting will be started.
+     * @param {number} N Number of items that should be loaded from the server.
+     * @param {number} direction Defines in which direction relative to the begin item ID the new should be loaded.
+     * @return {Elements|null}
+     */
+    loadItems: function(beginID, N, direction) {
+        var items = new Elements();
+        for (var n = 0; n < N; n++) {
+            items.push(this.items[wrapIndices(beginID + n * direction, 0, this.NItems)]);
+        }
+
+        return items;
+    },
+
+    /**
+     * Get items from the playlist.
+     *
+     * @param {number} beginID Item ID from which the counting will be started.
+     * @param {number} N Number of items that should be loaded from the server.
+     * @param {number} direction Defines in which direction relative to the begin item ID the new should be loaded.
+     * @return {Elements|null}
+     */
+    getItems: function(beginID, N, direction) {
+        if (this.NCached == this.NItems) {
+            console.warn('All items are already cached!');
+            return null;
+        }
+
+        if (beginID + N * direction > this.NItems) {
+            N = this.NItems - beginID;
+        }
+
+        // Check if requested items are already uploaded.
+        for (var n = 0; n < N; n++) {
+            if (!this.items[beginID + n * direction]) {
+                beginID += n;
+                N -= n;
+                break;
+            }
+        }
+
+        if (N == 0) {
+            return null;
+        }
+
+        return this.loadItems(beginID, N, direction);
     }
 });
 
@@ -1566,14 +1582,8 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
  * @param {string} src Data source.
  * @param {number} N Total amount of items in playlist.
  */
-CarouselPlaylist.Ajax = new Class(/** @lends CarouselPlaylist.Ajax# */{
+CarouselPlaylist.AJAX = new Class(/** @lends CarouselPlaylist.AJAX# */{
     Extends: CarouselPlaylist,
-
-    /**
-     * Number of loaded items.
-     * @type {number}
-     */
-    NLoaded: 0,
 
     /**
      * Request object.
@@ -1582,19 +1592,19 @@ CarouselPlaylist.Ajax = new Class(/** @lends CarouselPlaylist.Ajax# */{
     request: new Request(),
 
     // constructor
-    initialise: function(src, N) {
-        this.items.length = N;
+    initialize: function(src, N) {
+        this.NItems = this.items.length = N;
 
         this.request.url = src;
-        this.request.link = 'chain';
+        this.request.ajax = false;
+//        this.request.link = 'chain';
         this.request.addEvents({
             success: function(response) {
-                console.log(response);
-
                 for (var n = 0; n < response.length; n++) {
-                    this.items[this.NLoaded+n] = response[n];
+                    this.items[this.NCached+n] = response[n];
                 }
-                this.NLoaded += response.length;
+
+                this.NCached += response.length;
             }.bind(this),
             failure: function(err) {
                 console.log(err);
@@ -1610,19 +1620,15 @@ CarouselPlaylist.Ajax = new Class(/** @lends CarouselPlaylist.Ajax# */{
 
     /**
      * Load N items.
+     * @param {number} beginID Item ID from which the counting will be started.
      * @param {number} N Number of items that should be loaded from the server.
+     * @param {number} direction Defines in which direction relative to the begin item ID the new should be loaded.
+     * @return {Elements|null}
      */
-    loadItems: function(N) {
-        if (this.NLoaded == this.items.length) {
-            console.warn('All items are already loaded!');
-            return;
-        }
-        if (this.NLoaded + N > this.items.length) {
-            N = this.items.length - this.NLoaded;
-        }
+    loadItems: function(beginID, N, direction) {
+        this.request.send(beginID, N * direction);
 
-        this.request.send(this.NLoaded, this.NLoaded+N);
-        console.log('loaded: ' + this.NLoaded + ' items');
+        return this.parent();
     }
 });
 
@@ -1707,3 +1713,40 @@ var CarouselConnector = new Class(/** @lends CarouselConnector# */{
  * @deprecated Use CarouselFactory
  */
 var Carousel = CarouselFactory;
+
+/**
+ * Wrap an index between lower and upper limits.
+ *
+ * @throws {string} Arguments must be: maxID != 0 minID >= 0 maxID > minID
+ *
+ * @param {number} id Index that must be wrapped.
+ * @param {number} minID Lower limit.
+ * @param {number} maxID Upper limit.
+ * @param {boolean} [toWrap = true] Determines, will the id wrapped (true) or cropped (false) by limits.
+ * @returns {number} Wrapped id.
+ *
+ * @example
+ * wrapIndices(-2, 0, 8, true)  == 6
+ * wrapIndices(-2, 0, 8, false) == 0
+ */
+function wrapIndices(id, minID, maxID, toWrap) {
+    if (maxID === 0 || minID < 0 || maxID < minID) {
+        throw 'Arguments must be: maxID != 0 minID >= 0 maxID > minID';
+    }
+    if (toWrap === undefined) {
+        toWrap = true;
+    }
+    if (toWrap) {
+        return (id >= maxID)
+            ? id - maxID * Math.floor(id / maxID)
+            : (id < minID)
+                ? id + maxID * Math.ceil(Math.abs(id) / maxID)
+                : id;
+    } else {
+        return (id >= maxID)
+            ? maxID
+            : (id < minID)
+                ? minID
+                : id;
+    }
+}
