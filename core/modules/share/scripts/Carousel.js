@@ -146,13 +146,19 @@ var ACarousel = new Class(/** @lends ACarousel# */{
      * Indicates current active item in playlist.
      * @type {number}
      */
-    currentActiveID: 0,
+    currentActiveID: -1,
 
     /**
      * Item size. It holds the maximal width and height.
      * @type {number[]}
      */
     itemSize: [0,0],
+
+    /**
+     * Cached items from playlist
+     * @type {Elements}
+     */
+    items: new Elements(),
 
     // constructor
     initialize: function (el, opts) {
@@ -186,17 +192,16 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         this.element.store('id', this._id);
 
         this.createPlaylist();
+        if (this.options.NVisibleItems == 'all') {
+            this.options.NVisibleItems = this.options.playlist.NItems;
+        }
 
         var ids = [];
         for (var n = 0; n < this.options.NVisibleItems; n++) {
             ids[n] = n;
         }
-        /**
-         * Holds all items from the playlist.
-         * @type {Elements|Element[]}
-         */
-        this.items = this.options.playlist.loadItems(ids);
-        this.playlistHolder.adopt(this.items);
+        this.checkCache(ids);
+        this.setActiveItem(0);
     },
 
     /**
@@ -296,6 +301,10 @@ var ACarousel = new Class(/** @lends ACarousel# */{
      * @param {number} id Item ID.
      */
     selectItem: function (id) {
+        if (this.currentActiveID === id) {
+            return;
+        }
+
         this.setActiveItem(id);
 
         /**
@@ -710,7 +719,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
 
             ids = this.getNewVisibleItemIDs(direction, scrollNTimes);
 
-            this.checkCache(direction, ids);
+            this.checkCache(ids);
 
             newItems = this.getNewVisibleItems(direction, scrollNTimes, ids);
 
@@ -738,13 +747,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          *
          * @memberOf ACarousel#
          * @protected
-         * @param {number} direction Scrolling direction.
          * @param {number[]} ids Item indices.
          */
-        checkCache: function(direction, ids) {
-            var n,
-                uncachedIDs = [],
-                uncachedEls;
+        checkCache: function(ids) {
+            var uncachedIDs = [],
+                uncachedEls,
+                n;
 
             // Check if requested items are already uploaded.
             for (n = 0; n < ids.length; n++) {
@@ -775,31 +783,10 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 });
             }, this);
 
-            var min = Math.min.apply(null, uncachedIDs);
-            var max = Math.max.apply(null, uncachedIDs);
-            if (min == 0) {
-                var minID = uncachedIDs.indexOf(min);
-                this.items[0] = uncachedEls[minID];
-                this.items.length++;
-                this.playlistHolder.grab(this.items[0], 'top');
-                uncachedIDs = uncachedIDs.filter(function(v) {
-                    return v !== min;
-                });
-            }
-            if (max == this.options.playlist.NItems-1) {
-                var maxID = uncachedIDs.indexOf(max);
-                this.items[max] = uncachedEls[maxID];
-                this.items.length++;
-                this.playlistHolder.grab(this.items[max]);
-                uncachedIDs = uncachedIDs.filter(function(v) {
-                    return v !== max;
-                });
-            }
-
             for (n = 0; n < uncachedIDs.length; n++) {
                 this.items[uncachedIDs[n]] = uncachedEls[n];
                 this.items.length++;
-                this.items[uncachedIDs[n] - direction].grab(this.items[uncachedIDs[n]], ((direction == 1) ? 'after' : 'before'));
+                this.playlistHolder.grab(this.items[uncachedIDs[n]]);
             }
         },
 
@@ -1043,7 +1030,6 @@ var CarouselFactory = new Class(/** @lends CarouselFactory# */{
         this.carousel = new CarouselFactory.Types[this.options.carousel.type](el, this.options.carousel);
         if (this.options.controls.type !== 'none') {
             this.controls = new CarouselFactory.Controls[this.options.controls.type](this.carousel, this.options.controls);
-            this.carousel.items[this.carousel.currentActiveID].addClass(this.carousel.options.activeLabel);
         }
 
         this.carousel.build();
@@ -1625,6 +1611,8 @@ CarouselFactory.Controls = {
  * @param {string} [itemSelector] CSS Selector of the playlist's items. If this argument is not defined, then all children of the holder will be selected as playlist's items.
  */
 var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
+    Implements: Events,
+
     /**
      * Indicates whether this playlist is external relative to the carousel, which uses this playlist.
      * @type {boolean}
@@ -1636,12 +1624,6 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
      * @type {Elements}
      */
     items: new Elements(),
-
-    /**
-     * Number of loaded items.
-     * @type {number}
-     */
-    NCached: 0,
 
     // constructor
     initialize: function (element, itemSelector) {
@@ -1670,13 +1652,6 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
         this.items.dispose();
         this.holder.dispose();
     },
-    /**
-     * Hide the playlist.
-     * @deprecated
-     */
-    hide: function () {
-        this.items[0].getParent().dispose();
-    },
 
     /**
      * Get the playlist's holder.
@@ -1695,16 +1670,10 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
     loadItems: function(ids) {
         var items = new Elements();
 
-        if (this.NCached == this.NItems) {
-            console.warn('All items are already cached!');
-            return items;
-        }
-
         for (var n = 0; n < ids.length; n++) {
             items.push(this.items[ids[n]].clone());
             items[n].store('id', ids[n]);
         }
-        this.NCached += ids.length;
 
         return items;
     }
@@ -1737,19 +1706,17 @@ CarouselPlaylist.AJAX = new Class(/** @lends CarouselPlaylist.AJAX# */{
         this.request.addEvents({
             success: function(response) {
                 for (var n = 0; n < response.length; n++) {
-                    this.items[this.NCached+n] = response[n];
+                    this.items.push(response[n]);
                 }
-
-                this.NCached += response.length;
             }.bind(this),
             failure: function(err) {
-                console.log(err);
+                console.error(err);
 
                 /**
                  * Fired by failure loading of items from server.
-                 * @event CarouselPlaylist.Ajax#stop
+                 * @event CarouselPlaylist.Ajax#failure
                  */
-                this.fireEvent('stop');
+                this.fireEvent('failure');
             }
         });
     },
@@ -1760,14 +1727,18 @@ CarouselPlaylist.AJAX = new Class(/** @lends CarouselPlaylist.AJAX# */{
      * @return {Elements}
      */
     loadItems: function(ids) {
-        if (this.NCached == this.NItems) {
-            console.warn('All items are already cached!');
-            return new Elements();
+        var uncached = [];
+        // Check if requested items are already uploaded.
+        for (var n = 0; n < ids.length; n++) {
+            if (!this.items[ids[n]]) {
+                uncached.push(ids[n]);
+            }
+        }
+        if (uncached.length > 0) {
+            this.request.send(uncached);
         }
 
-        this.request.send(ids);
-
-        return this.parent();
+        return this.parent(ids);
     }
 });
 
@@ -1811,11 +1782,6 @@ var CarouselConnector = new Class(/** @lends CarouselConnector# */{
          * @type {CarouselFactory[]}
          */
         this.carousels = carousels;
-
-        // hide playlist if it is external relative to all connected carousels
-        if (this.carousels[0].options.playlist.isExtern === true) {
-            this.carousels[0].options.playlist.hide();
-        }
 
         // Add events to the connected carousels
         for (n = 0; n < this.carousels.length; n++) {
