@@ -182,6 +182,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
      */
     direction: 1,
 
+    /**
+     * Defines whether the carousel controls are locked.
+     * @type {boolean}
+     */
+    isLocked: false,
+
     // constructor
     initialize: function (el, opts) {
         /**
@@ -234,7 +240,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
             link: 'cancel',
             duration: this.options.fx.duration,
             transition: this.options.fx.transition,
-            onChainComplete: function () {
+            onComplete: function () {
                 this.isEffectCompleted = true;
                 this.NScrolls = 0;
 
@@ -290,12 +296,15 @@ var ACarousel = new Class(/** @lends ACarousel# */{
              * @type {number}
              */
             this.firstVisibleItemID = 0;
-            //todo doc this
+
+            /**
+             * Backup of [firstVisibleItemID]{@link ACarousel#firstVisibleItemID}.
+             * @type {number}
+             */
             this.firstVisibleItemID_bk = 0;
 
-            //todo doc this
             /**
-             *
+             * Backup of [currentActiveID]{@link ACarousel#currentActiveID}.
              * @type {number}
              */
             this.currentActiveID_bk = 0;
@@ -326,9 +335,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
     },
 
     /**
-     * Scroll forward by one step. Multiple calls will be chained.
+     * Scroll forward.
      */
     scrollForward: function () {
+        if (this.isLocked) {
+            return;
+        }
         if (this.isEffectCompleted) {
             this.scroll(1, 1);
         } else {
@@ -337,9 +349,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
     },
 
     /**
-     * Scroll backward by one step. Multiple calls will be chained.
+     * Scroll backward.
      */
     scrollBackward: function () {
+        if (this.isLocked) {
+            return;
+        }
         if (this.isEffectCompleted) {
             this.scroll(-1, 1);
         } else {
@@ -413,6 +428,20 @@ var ACarousel = new Class(/** @lends ACarousel# */{
      */
     stop: function() {
         this.fx.stop();
+    },
+
+    /**
+     * Lock carousel controls.
+     */
+    lock: function() {
+        this.isLocked = true;
+    },
+
+    /**
+     * Unlock carousel controls.
+     */
+    unlock: function() {
+        this.isLocked = false;
     },
 
     Protected: {
@@ -782,8 +811,8 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 for (var n = 0; n < N; n++) {
                     items.push(items[n].clone().inject(holder, where));
                     items[n + N * i].cloneEvents(items[n]);
-                    if (items[n].hasClass(this.activeLabel)) {
-                        items[n + N * i].addClass(this.activeLabel);
+                    if (items[n].hasClass(this.options.activeLabel)) {
+                        items[n + N * i].addClass(this.options.activeLabel);
                     }
                 }
             }
@@ -1105,9 +1134,6 @@ CarouselFactory.Types = {
                         for (n = this.options.playlist.NItems; n < this.items.length; n++) {
                             this.items[n].setStyle(this.options.scrollDirection, -this.dShift);
                         }
-                        for (n = 0; n < this.options.scrollStep * scrollNTimes; n++) {
-                            this.items[this.wrapIndices(newItemID + n, 0, this.options.playlist.NItems, true)].setStyle(this.options.scrollDirection, -this.dShift);
-                        }
                     }
                 }
 
@@ -1146,7 +1172,7 @@ CarouselFactory.Types = {
                     diffFromRight = this.options.playlist.NItems - diffFromLeft;
 
                 if (diffFromLeft <= diffFromRight) {
-                    NTimes = diffFromLeft - (this.wrapIndices(this.firstVisibleItemID + this.options.NVisibleItems, 0, this.options.playlist.NItems) - 1 - this.currentActiveID);
+                    NTimes = diffFromLeft - (this.wrapIndices(this.firstVisibleItemID + this.options.NVisibleItems - this.currentActiveID, 0, this.options.playlist.NItems) - 1);
                 } else {
                     NTimes = diffFromRight - (this.currentActiveID - this.firstVisibleItemID);
                     direction = -1;
@@ -1463,6 +1489,7 @@ CarouselFactory.Controls = {
                 scrollForward: this.carousel.scrollForward.bind(this.carousel),
                 scrollBackward: this.carousel.scrollBackward.bind(this.carousel)
             });
+            var self = this;
             this.carousel.addEvents({
                 enableScrolling: this.enable.bind(this),
                 disableScrolling: this.disable.bind(this),
@@ -1472,13 +1499,13 @@ CarouselFactory.Controls = {
                     }
                 }.bind(this.controls),
                 endReached: function() {
-                    this.controls.forward.isEnabled = false;
-                    this.carousel.stop();
-                }.bind(this),
+                    self.controls.forward.isEnabled = false;
+                    self.carousel.stop();
+                },
                 beginReached: function() {
-                    this.controls.backward.isEnabled = false;
-                    this.carousel.stop();
-                }.bind(this)
+                    self.controls.backward.isEnabled = false;
+                    self.carousel.stop();
+                }
             });
         },
 
@@ -1486,29 +1513,30 @@ CarouselFactory.Controls = {
          * Implements the parent abstract [enable]{@link ACarousel.AControls#enable} method.
          */
         enable: function() {
+            var self = this;
             this.controls.forward.element.addEvent(this.options.event, function (ev) {
                 ev.stop();
 
-                if (this.controls.forward.isEnabled) {
+                if (self.controls.forward.isEnabled) {
                     /**
                      * Fired when the forward button is enabled and clicked.
                      * @event CarouselFactory.Controls.TwoButtons#scrollForward
                      */
-                    this.fireEvent('scrollForward');
+                    self.fireEvent('scrollForward');
                 }
-            }.bind(this));
+            });
 
             this.controls.backward.element.addEvent(this.options.event, function (ev) {
                 ev.stop();
 
-                if (this.controls.backward.isEnabled) {
+                if (self.controls.backward.isEnabled) {
                     /**
                      * Fired when the backward button is enabled and clicked.
                      * @event CarouselFactory.Controls.TwoButtons#scrollBackward
                      */
-                    this.fireEvent('scrollBackward');
+                    self.fireEvent('scrollBackward');
                 }
-            }.bind(this));
+            });
         },
 
         /**
@@ -1636,9 +1664,9 @@ var CarouselConnector = new Class(/** @lends CarouselConnector# */{
         }
 
         // Add events to the connected carousels
+        var self = this;
         for (n = 0; n < this.carousels.length; n++) {
             (function (n) {
-                var self = this;
                 self.carousels[n].addEvent('selectItem', function (id) {
                     // With slicing we exclude the carousel that fires event
                     self.carousels.slice(0, n).each(function (carousel) {
@@ -1648,14 +1676,32 @@ var CarouselConnector = new Class(/** @lends CarouselConnector# */{
                         self.carouselEventFn(carousel, id);
                     });
                 });
-            }.bind(this))(n);
+                self.carousels[n].fx.addEvents({
+                    start: function () {
+                        self.carousels.slice(0, n).each(function (carousel) {
+                            carousel.lock();
+                        });
+                        self.carousels.slice(n + 1, self.carousels.length).each(function (carousel) {
+                            carousel.lock();
+                        });
+                    },
+                    complete: function () {
+                        self.carousels.slice(0, n).each(function (carousel) {
+                            carousel.unlock();
+                        });
+                        self.carousels.slice(n + 1, self.carousels.length).each(function (carousel) {
+                            carousel.unlock();
+                        });
+                    }
+                });
+            })(n);
         }
     },
 
     /**
      * It stores the functions for selecting a specific item <tt>id</tt> in <tt>carousel</tt> by fired event [selectItem]{@link CarouselFactory#selectItem} from other carousel.
      *
-     * @param {CarouselFactory} carousel Connected carousel.
+     * @param {ACarousel} carousel Connected carousel.
      * @param {number} id Item ID in carousel that will be selected.
      */
     carouselEventFn: function (carousel, id) {
