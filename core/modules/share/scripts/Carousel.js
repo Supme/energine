@@ -155,12 +155,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
     itemSize: [0,0],
 
     /**
-     * Cached items from playlist
-     * @type {Elements}
-     */
-    items: new Elements(),
-
-    /**
      * Defines how many scrolls should be combined in one scroll effect.
      * @type {number}
      */
@@ -232,6 +226,11 @@ var ACarousel = new Class(/** @lends ACarousel# */{
             this.options.fx.duration = 0;
         }
 
+        /**
+         * Cached items from playlist
+         * @type {Elements}
+         */
+        this.items = new Elements();
         var ids = [];
         for (var n = 0; n < this.options.NVisibleItems; n++) {
             ids[n] = n;
@@ -533,11 +532,10 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @memberOf ACarousel#
          * @abstract
          * @protected
-         * @param {number} direction Scrolling direction.
          * @param {number} scrollNTimes Scrolling multiplier.
          * @return {number[]}
          */
-        getNewVisibleItemIDs: function(direction, scrollNTimes) {},
+        getNewVisibleItemIDs: function(scrollNTimes) {},
 
         /**
          * Method for calculation the ID of the first visible item.
@@ -747,7 +745,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 }
                 // If the selected item is not visible, then the leftmost or rightmost visible item will be selected
                 if (!isSelectedVisible) {
-                    this.selectItem(wrapIndices(
+                    this.setActiveItem(wrapIndices(
                         (direction == 1)
                             ? this.firstVisibleItemID
                             : this.firstVisibleItemID + this.options.NVisibleItems - 1,
@@ -1165,38 +1163,10 @@ CarouselFactory.Types = {
                     itemShift,
                     n;
 
-                if (direction === 1) {
+                if (this.direction === 1) {
                     itemShift = this.itemShifts[0];
                 } else {
                     itemShift = this.itemShifts[1] - ((scrollNTimes == 1) ? 0 : this.length * (scrollNTimes - 1));
-                }
-
-                for (n = 0; n < ids.length; n++) {
-                    newItems[n] = this.items[ids[n]].setStyle(this.options.scrollDirection, this.length * n + itemShift);
-                }
-
-                return newItems;
-            },
-
-            /**
-             * Implementation of the abstract [getNewVisibleItemIDs]{@link ACarousel#getNewVisibleItemIDs} method.
-             *
-             * @memberOf CarouselFactory.Types.Loop#
-             * @protected
-             * @param {number} direction Scrolling direction.
-             * @param {number} scrollNTimes Scrolling multiplier.
-             * @return {number[]}
-             */
-            getNewVisibleItemIDs: function(direction, scrollNTimes) {
-                // new first visible item index after scrolling
-                var newItemID,
-                    itemIDs = [],
-                    n;
-
-                if (direction === 1) {
-                    newItemID = this.firstVisibleItemID + this.options.NVisibleItems;
-                } else {
-                    newItemID = this.firstVisibleItemID - this.options.scrollStep * scrollNTimes;
                 }
 
                 if (scrollNTimes > 1) {
@@ -1212,6 +1182,33 @@ CarouselFactory.Types = {
                             this.items[n].setStyle(this.options.scrollDirection, -this.dShift);
                         }
                     }
+                }
+
+                for (n = 0; n < ids.length; n++) {
+                    newItems[n] = this.items[ids[n]].setStyle(this.options.scrollDirection, this.length * n + itemShift);
+                }
+
+                return newItems;
+            },
+
+            /**
+             * Implementation of the abstract [getNewVisibleItemIDs]{@link ACarousel#getNewVisibleItemIDs} method.
+             *
+             * @memberOf CarouselFactory.Types.Loop#
+             * @protected
+             * @param {number} scrollNTimes Scrolling multiplier.
+             * @return {number[]}
+             */
+            getNewVisibleItemIDs: function(scrollNTimes) {
+                // new first visible item index after scrolling
+                var newItemID,
+                    itemIDs = [],
+                    n;
+
+                if (this.direction === 1) {
+                    newItemID = this.firstVisibleItemID + this.options.NVisibleItems;
+                } else {
+                    newItemID = this.firstVisibleItemID - this.options.scrollStep * scrollNTimes;
                 }
 
                 for (n = 0; n < this.options.scrollStep * scrollNTimes; n++) {
