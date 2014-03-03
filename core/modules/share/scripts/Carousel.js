@@ -1611,7 +1611,7 @@ var APlaylist = new Class(/** @lends APlaylist# */{
      * Playlist holder element.
      * @type {Element}
      */
-    holder: new Element(),
+    holder: null,
 
     /**
      * Amount of items in the playlist.
