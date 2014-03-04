@@ -615,11 +615,11 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @protected
          */
         createPlaylist: function() {
-            // If the playlist is not explicitly specified, set than try to get a playlist from the carousel.
+            // If the playlist is not explicitly specified, than try to get a playlist from the carousel.
             if (this.options.playlist === null) {
                 try {
                     this.playlistHolder = this.viewbox.getElement('.playlist_local');
-                    this.options.playlist = new CarouselPlaylist(this.playlistHolder);
+                    this.options.playlist = new Playlist.HTML(this.playlistHolder);
                 } catch (err) {
                     console.warn(err);
                     throw 'Carousel can not be created without playlist.';
@@ -1670,70 +1670,63 @@ CarouselFactory.Controls = {
 };
 
 /**
- * Holds an playlist, that will be used by Carousel objects.
- *
- * @throws {string} No items were found in the playlist.
- *
- * @example <caption>HTML container for playlist.</caption>
- * &ltdiv id="playlistID" class="playlist"&gt
- *     &ltdiv class="item"&gtitem1&lt/div&gt
- *     &ltdiv class="item"&gtitem2&lt/div&gt
- *     ...
- * &lt/div&gt
+ * Abstract playlist.
  *
  * @constructor
- * @param {string | Element} element Can be the id of an element in DOM Tree, or CSS Selector, or an Element that holds playlist's items. In case with CSS Selector it will get only the first element.
- * @param {string} [itemSelector] CSS Selector of the playlist's items. If this argument is not defined, then all children of the holder will be selected as playlist's items.
+ * @param {*} src Playlist source.
  */
-var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
-    Implements: Events,
-
-    /**
-     * Indicates whether this playlist is external relative to the carousel, which uses this playlist.
-     * @type {boolean}
-     */
-    isExtern: true,
-
+var APlaylist = new Class(/** @lends APlaylist# */{
     /**
      * Playlist items.
      * @type {Elements}
      */
     items: new Elements(),
 
+    /**
+     * Playlist holder element.
+     * @type {Element}
+     */
+    holder: null,
+
+    /**
+     * Amount of items in the playlist.
+     * @type {Number}
+     */
+    NItems: 0,
+
+    /**
+     * Playlist source.
+     * @type {*}
+     */
+    src: null,
+
     // constructor
-    initialize: function (element, itemSelector) {
-        this.itemSelector = itemSelector;
-
-        this.holder = $(element) || $$(element)[0];
-        if (this.holder == null) {
-            throw 'Element for CarouselPlaylist was not found in DOM Tree!';
-        }
-
-        if (this.itemSelector === undefined) {
-            this.items = this.holder.getChildren();
-        } else {
-            this.items = this.holder.getElements(this.itemSelector);
-        }
-
-        /**
-         * Amount of items in the playlist.
-         * @type {Number}
-         */
-        this.NItems = this.items.length;
-        if (this.NItems == 0) {
-            throw 'No items were found in the playlist.';
-        }
-
-        this.items.dispose();
-        this.holder.dispose();
+    initialize: function (src) {
+        this.src = src;
+        this.initItems();
     },
 
     /**
-     * Get the playlist's holder.
+     * Initialise playlist items.
+     * @abstract
+     */
+    initItems: function() {},
+
+    /**
+     * Get the playlist's source.
+     *
+     * @returns {*}
+     */
+    getSource: function() {
+        return this.src;
+    },
+
+    /**
+     * Get the playlist's holder element.
      *
      * @returns {Element}
      */
-    getHolder: function(){
+    getHolder: function() {
         return this.holder;
     },
 
@@ -1755,67 +1748,134 @@ var CarouselPlaylist = new Class(/** @lends CarouselPlaylist# */{
 });
 
 /**
- * Playlist, that gets the items asynchronously from the server.
- *
- * @constructor
- * @param {string} src Data source.
- * @param {number} N Total amount of items in playlist.
+ * Different implementations of the [abstract playlist]{@link APlaylist}.
+ * @namespace
  */
-CarouselPlaylist.AJAX = new Class(/** @lends CarouselPlaylist.AJAX# */{
-    Extends: CarouselPlaylist,
-
+var Playlist = /** @lends Playlist */{
     /**
-     * Request object.
-     * @type {Request}
+     * HTML type of the playlist.
+     *
+     * @example <caption>HTML container for playlist.</caption>
+     * &ltdiv id="playlistID" class="playlist"&gt
+     *     &ltdiv class="item"&gtitem1&lt/div&gt
+     *     &ltdiv class="item"&gtitem2&lt/div&gt
+     *     ...
+     * &lt/div&gt
+     *
+     * @augments APlaylist
+     *
+     * @throws {string} No items were found in the playlist.
+     *
+     * @constructor
+     * @param {string|Element} src Playlist source. It can be the id of an element in DOM Tree, or CSS Selector, or an Element that holds playlist's items. In case with CSS Selector it will get only the first element.
+     * @param {string} [itemSelector] CSS Selector of the playlist's items. If this argument is not defined, then all children of the holder will be selected as playlist's items.
      */
-    request: new Request({
-        async: false,
-        link: 'chain'
+    HTML: new Class(/** @lends Playlist.HTML# */{
+        Extends: APlaylist,
+
+        // constructor
+        initialize: function (src, itemSelector) {
+            /**
+             * CSS Selector of the playlist's items.
+             * @type {string|undefined}
+             */
+            this.itemSelector = itemSelector;
+
+            this.parent(src);
+        },
+
+        /**
+         * Implementation of the abstract [initItems]{@link APlaylist#initItems} method.
+         */
+        initItems: function() {
+            this.holder = $(this.src) || $$(this.src)[0];
+            if (this.holder == null) {
+                throw 'Element for CarouselPlaylist was not found in DOM Tree!';
+            }
+
+            if (this.itemSelector === undefined) {
+                this.items = this.holder.getChildren();
+            } else {
+                this.items = this.holder.getElements(this.itemSelector);
+            }
+
+            this.NItems = this.items.length;
+            if (this.NItems == 0) {
+                throw 'No items were found in the playlist.';
+            }
+
+            this.items.dispose();
+            this.holder.dispose();
+        }
     }),
 
-    // constructor
-    initialize: function(src, N) {
-        this.NItems = this.items.length = N;
-
-        this.request.url = src;
-        this.request.addEvents({
-            success: function(response) {
-                for (var n = 0; n < response.length; n++) {
-                    this.items.push(response[n]);
-                }
-            }.bind(this),
-            failure: function(err) {
-                console.error(err);
-
-                /**
-                 * Fired by failure loading of items from server.
-                 * @event CarouselPlaylist.Ajax#failure
-                 */
-                this.fireEvent('failure');
-            }
-        });
-    },
-
     /**
-     * Load N items.
-     * @param {number[]} ids Array of element indices.
-     * @return {Elements}
+     * Playlist, that gets the items asynchronously from the server.
+     *
+     * @augments APlaylist
+     *
+     * @constructor
+     * @param {string} src Playlist source.
      */
-    loadItems: function(ids) {
-        var uncached = [];
-        // Check if requested items are already uploaded.
-        for (var n = 0; n < ids.length; n++) {
-            if (!this.items[ids[n]]) {
-                uncached.push(ids[n]);
-            }
-        }
-        if (uncached.length > 0) {
-            this.request.send(uncached);
-        }
+    AJAX: new Class(/** @lends Playlist.AJAX# */{
+        Extends: APlaylist,
 
-        return this.parent(ids);
-    }
-});
+        /**
+         * Request object.
+         * @type {Request}
+         */
+        request: new Request({
+            async: false,
+            link: 'chain'
+        }),
+
+        /**
+         * Implementation of the abstract [initItems]{@link APlaylist#initItems} method.
+         */
+        initItems: function() {
+            this.request.url = this.src;
+            this.request.addEvents({
+                success: function(response) {
+                    if (instanceOf(response, Array)) {
+                        for (var n = 0; n < response.length; n++) {
+                            this.items.push(response[n]);
+                        }
+                    } else if (instanceOf(response, Number)) {
+                        this.NItems = this.items.length = response;
+                    } else if (instanceOf(response, Element)) {
+                        this.holder = response;
+                    }
+                }.bind(this),
+                failure: function(err) {
+                    console.error(err);
+                }
+            });
+
+            this.request.send('getTotalAmount');
+            this.request.send('getHolderElement');
+        },
+
+        /**
+         * Load N items.
+         * @param {number[]} ids Array of element indices.
+         * @return {Elements}
+         */
+        loadItems: function(ids) {
+            var uncached = [];
+            // Check if requested items are already uploaded.
+            for (var n = 0; n < ids.length; n++) {
+                if (!this.items[ids[n]]) {
+                    uncached.push(ids[n]);
+                }
+            }
+            if (uncached.length > 0) {
+                this.request.send(uncached);
+            }
+
+            return this.parent(ids);
+        }
+    })
+};
 
 /**
  * Connects an Carousel objects and attach events to them. From MooTools it implements: Events.
@@ -1905,11 +1965,18 @@ var CarouselConnector = new Class(/** @lends CarouselConnector# */{
 });
 
 /**
- * Backward compatibility.
+ * Old carousel builder.
  *
  * @deprecated Use CarouselFactory
  */
 var Carousel = CarouselFactory;
+
+/**
+ * Old playlist builder.
+ *
+ * @deprecated Use Playlist.HTML
+ */
+var CarouselPlaylist = Playlist.HTML;
 
 /**
  * Wrap an index between lower and upper limits.
