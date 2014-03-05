@@ -1319,8 +1319,8 @@ CarouselFactory.Types = {
                      * Last possible scroll step for limited scrolling.
                      * @type {number}
                      */
-                    this.lastScrollStep = this.items.length - this.options.NVisibleItems
-                        - this.options.scrollStep * Math.floor((this.items.length - this.options.NVisibleItems) / this.options.scrollStep);
+                    this.lastScrollStep = this.options.playlist.NItems - this.options.NVisibleItems
+                        - this.options.scrollStep * Math.floor((this.options.playlist.NItems - this.options.NVisibleItems) / this.options.scrollStep);
                     if (this.lastScrollStep == 0) {
                         this.lastScrollStep = this.options.scrollStep;
                     }
@@ -1390,25 +1390,24 @@ CarouselFactory.Types = {
                  *
                  * @memberOf CarouselFactory.Types.Line#
                  * @protected
-                 * @param {number} direction Scrolling direction.
                  * @param {number} scrollNTimes Scrolling multiplier.
                  * @return {number[]}
                  */
-                getNewVisibleItemIDs: function(direction, scrollNTimes) {
+                getNewVisibleItemIDs: function(scrollNTimes) {
                     // new first visible ID in this.items after scrolling
                     var newItemID,
                         itemIDs = [],
                     // helper variables
                         n;
 
-                    if (direction === 1) {
+                    if (this.direction === 1) {
                         newItemID = this.firstVisibleItemID + this.options.NVisibleItems;
                     } else {
                         newItemID = this.firstVisibleItemID - this.options.scrollStep * scrollNTimes;
                     }
 
                     // If new item id reaches the last item then disable clicked button
-                    if (newItemID <= 0 || newItemID + this.options.scrollStep * scrollNTimes >= this.items.length) {
+                    if (newItemID <= 0 || newItemID + this.options.scrollStep * scrollNTimes >= this.options.playlist.NItems) {
                         (this.direction == 1)
                         /**
                          * Fired when the carousel has the end reached.
@@ -1417,12 +1416,13 @@ CarouselFactory.Types = {
                             ? this.fireEvent('endReached')
                             : this.fireEvent('beginReached');
                     }
+
                     // Check if last item effects are needed to be applied.
                     /**
                      * Defines whether the last scroll will made.
                      * @type {boolean}
                      */
-                    this.isLast = (newItemID + this.options.scrollStep * scrollNTimes) > this.items.length || newItemID < 0;
+                    this.isLast = (newItemID + this.options.scrollStep * scrollNTimes) >= this.options.playlist.NItems || newItemID < 0;
 
                     // Get new item indexes
                     if (this.isLast) {
@@ -1434,7 +1434,7 @@ CarouselFactory.Types = {
                         }
                     } else {
                         for (n = 0; n < this.options.scrollStep * scrollNTimes; n++) {
-                            itemIDs[n] = wrapIndices(newItemID + n, 0, options.playlist.NItems, true);
+                            itemIDs[n] = wrapIndices(newItemID + n, 0, this.options.playlist.NItems, true);
                         }
                     }
 
