@@ -25,7 +25,7 @@ function loadFixture(fixture) {
     }).send();
 }
 
-new TestCase('Carousel initialisation', {
+new TestCase('Cl initialisation', {
     setUp: function() {
         // Amount of items in the playlist
         var NItems = 7;
@@ -247,7 +247,7 @@ new TestCase('Carousel initialisation', {
     }
 });
 
-new AsyncTestCase('Scroll carousel', {
+new AsyncTestCase('S carousel', {
     setUp: function() {
         // Amount of items in the playlist
         var NItems = 7;

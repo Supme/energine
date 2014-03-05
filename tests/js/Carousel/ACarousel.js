@@ -1,5 +1,5 @@
 /**
- * @file Testing class ACarousel from Carousel.js
+ * @file Testing class ACarousel in Carousel.js 3.0.0
  *
  * @author Valerii Zinchenko
  * @version 1.0
@@ -38,10 +38,12 @@ function buildCarousel(el, opts) {
     return carousel;
 }
 
+// Amount of items in the playlist
+var NITEMS = 7;
+
 new TestCase('ACarousel. Static tests', {
     setUp: function() {
-        // Amount of items in the playlist
-        var NItems = 7;
+
 
         loadFixture('playlist.html');
         loadFixture('carousel.html');
@@ -49,12 +51,12 @@ new TestCase('ACarousel. Static tests', {
         // Create an playlist
         var playlistEl = $('playlistID');
         var item = playlistEl.getElement('.item');
-        for (var n = 1; n < NItems; n++)
+        for (var n = 1; n < NITEMS; n++)
             item.clone().inject(playlistEl);
         // Set styles to the items
-        playlistEl.getElements('.item').setStyle('width', 94);  // 94 + styles in carousel.css gives the width of item 100px.
+        playlistEl.getElements('.item').setStyle('width', 100);
 
-        this.playlist = new CarouselPlaylist('playlistID');
+        this.playlist = new Playlist.HTML('playlistID');
         this.carouselEl = $('carouselID');
     },
 
@@ -138,8 +140,7 @@ new TestCase('ACarousel. Static tests', {
     },
     testCheckingOptionsPlaylist: function() {
         this.playlist.items.inject($$('#carouselID .carousel_viewbox .playlist_local')[0]);
-
-        assertEquals($$('.playlist_local')[0], buildCarousel(this.carouselEl, {playlist:7}).options.playlist.items[0].getParent());
+        assertEquals(this.playlist, buildCarousel(this.carouselEl, {playlist:this.playlist}).options.playlist);
     },
     testEventEnableScrolling: function() {
         var c = new ACarousel(this.carouselEl, {playlist:this.playlist});
@@ -170,15 +171,15 @@ new TestCase('ACarousel. Static tests', {
         N = N || this.playlist.NItems;
 
         // Prepare expected positions
-        itemWidth = $('playlistID').getElement('.item').getSize().x;
         carousel = buildCarousel(this.carouselEl, {playlist: this.playlist, NVisibleItems:N});
+        itemWidth = carousel.items[0].getSize().x;
         for (n = 0; n < carousel.options.NVisibleItems; n++)
             expected.push(n*itemWidth);
         expected.push(-itemWidth);
 
         for (n = 0; n < carousel.options.NVisibleItems; n++)
             assertEquals('"left" style value of item #' + n, expected[n], carousel.items[n].getStyle('left').toInt());
-        for (; n < carousel.NItems; n++)
+        for (; n < carousel.items.length; n++)
             assertEquals('"left" style value of item #' + n, expected[carousel.options.NVisibleItems], carousel.items[n].getStyle('left').toInt());
 
         if (N > 1)
@@ -191,9 +192,10 @@ new TestCase('ACarousel. Static tests', {
         assertTrue(carousel.items[3].hasClass('active'));
     },
     testEventSelectItem: function() {
-        var SELECT_ITEM = 3;
-        var c = new ACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'all'});
-        var selected = 0;
+        var SELECT_ITEM = 3,
+            c = new ACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'all'}),
+            selected = 0;
+
         c.addEvent('selectItem', function(ev) {
             selected = ev;
         });
@@ -215,22 +217,16 @@ new TestCase('ACarousel. Static tests', {
     },
     testExternalPlaylist: function() {
         var carousel = new ACarousel(this.carouselEl, {playlist: this.playlist});
-        assertTrue(carousel.options.playlist.isExtern);
+        assertEquals(NITEMS, this.playlist.NItems);
+        assertEquals(NITEMS, this.playlist.items.length);
+        assertEquals(1, carousel.items.length);
         assertNotEquals(this.playlist.items, carousel.items);
     },
-    testInternalPlaylistImplicit: function() {
-        this.playlist.items.inject($$('#carouselID .playlist_local')[0]);
+    testImplicitPlaylist: function() {
+        this.playlist.items.inject(this.carouselEl.getElement('.playlist_local'));
 
         var carousel = new ACarousel(this.carouselEl);
-        assertFalse(carousel.options.playlist.isExtern);
-        assertEquals(this.playlist.items, carousel.items);
-    },
-    testInternalPlaylistExplicit: function() {
-        this.playlist.items.inject($$('#carouselID .playlist_local')[0]);
-        $$('#carouselID .playlist_local')[0].addClass('internalPlaylist');
-
-        var carousel = new ACarousel(this.carouselEl, new CarouselPlaylist('.internalPlaylist'));
-        assertFalse(carousel.options.playlist.isExtern);
-        assertEquals(this.playlist.items, carousel.items);
+        assertTrue(instanceOf(carousel.options.playlist, Playlist.HTML));
+        assertEquals(1, carousel.items.length);
     }
 });

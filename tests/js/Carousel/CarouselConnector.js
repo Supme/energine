@@ -1,8 +1,9 @@
 /**
- * @file Testing CarouselConnector from Carousel.js
+ * @file Test CarouselConnector in Carousel.js 3.0.0
  *
  * @author Valerii Zinchenko
- * @version 0.1
+ *
+ * @version 1.0
  */
 
 /**
@@ -45,7 +46,7 @@ new TestCase('CarouselConnector initialisation', {
         var carouselElement = $('carouselID');
         carouselElement.clone().inject(carouselElement, 'after').addClass('another');
 
-        this.playlist = new CarouselPlaylist('playlistID');
+        this.playlist = new Playlist.HTML('playlistID');
     },
 
     testThrows: function() {
@@ -63,15 +64,15 @@ new TestCase('CarouselConnector initialisation', {
         try{
             new CarouselConnector(0);
         } catch (err) {
-            assertEquals('Second argument must be an Array of Carousel objects!', err);
+            assertEquals('First argument must be an Array of Carousel objects!', err);
             NThrows |= 1;
         }
 
         NThrows <<= 1;
         try{
-            new CarouselConnector([new Carousel('.carousel', {carousel:{playlist:this.playlist}}), 5]);
+            new CarouselConnector([new CarouselFactory('.carousel', {carousel:{playlist:this.playlist}}), 5]);
         } catch (err) {
-            assertEquals('Element #1 in the array is not instance of Carousel!', err);
+            assertEquals('Element #1 in the array is not instance of CarouselFactory!', err);
             NThrows |= 1;
         }
 
@@ -82,7 +83,7 @@ new TestCase('CarouselConnector initialisation', {
 
         NThrows <<= 1;
         try{
-            new CarouselConnector([new Carousel('.carousel', {carousel:{playlist:this.playlist}}), new Carousel('.carousel.another')]);
+            new CarouselConnector([new CarouselFactory('.carousel', {carousel:{playlist:this.playlist}}), new CarouselFactory('.carousel.another')]);
         } catch (err) {
             assertEquals('Carousels can not be connected, because of different amount of items in the playlists!', err);
             NThrows |= 1;
@@ -90,8 +91,8 @@ new TestCase('CarouselConnector initialisation', {
 
         NThrows <<= 1;
         try {
-            new CarouselConnector([new Carousel('.carousel', {carousel:{playlist:this.playlist}}),
-                                   new Carousel('.carousel.another', {carousel:{playlist:this.playlist}})]);
+            new CarouselConnector([new CarouselFactory('.carousel', {carousel:{playlist:this.playlist}}),
+                                   new CarouselFactory('.carousel.another', {carousel:{playlist:this.playlist}})]);
         } catch (err) {
             NThrows |= 1;
         }
@@ -120,13 +121,13 @@ new AsyncTestCase('Selecting items', {
         var carouselElement = $('carouselID');
         carouselElement.clone().inject(carouselElement, 'after').addClass('another');
 
-        this.playlist = new CarouselPlaylist('playlistID');
+        this.playlist = new Playlist.HTML('playlistID');
 
         this.shortAnimation = 50;
     },
     testItemSelecting: function(queue) {
-        var cc = new CarouselConnector([new Carousel('.carousel', {carousel:{playlist:this.playlist, fx:{duration:0}}}),
-                                        new Carousel('.carousel.another', {carousel:{playlist:this.playlist}, fx:{duration:0}})]);
+        var cc = new CarouselConnector([new CarouselFactory('.carousel', {carousel:{playlist:this.playlist, fx:{duration:0}}}),
+                                        new CarouselFactory('.carousel.another', {carousel:{playlist:this.playlist}, fx:{duration:0}})]);
 
         queue.call('select item', function(callback) {
             cc.carousels[0].scrollForward();

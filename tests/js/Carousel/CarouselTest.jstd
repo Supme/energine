@@ -8,11 +8,12 @@ load:
   - ../../../core/modules/share/scripts/Carousel.js
 
 test:
-  - TestACarousel.js
-  - TestLoop.js
+  - ACarousel.js
+  - CarouselFactory.Loop.js
+  - CarouselFactory.Line.js
   - CarouselTests.js
-  - CarouselPlaylistTests.js
-  - CarouselConnectorTests.js
+  - Playlist.HTML.js
+  - CarouselConnector.js
 
 serve:
   - fixtures/*.html

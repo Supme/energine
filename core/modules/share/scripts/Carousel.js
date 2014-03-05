@@ -224,6 +224,8 @@ var ACarousel = new Class(/** @lends ACarousel# */{
             this.options.NVisibleItems = this.options.playlist.NItems;
             this.options.scrollStep = 0;
             this.options.fx.duration = 0;
+        } else if (this.options.NVisibleItems > this.options.playlist.NItems) {
+            this.options.NVisibleItems = this.options.playlist.NItems;
         }
 
         /**
@@ -783,7 +785,8 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 ids,
                 newItems,
                 first,
-                n;
+                n,
+                toClone;
 
             // Collects all visible items
             for (n = 0; n < this.options.NVisibleItems; n++) {
@@ -1144,7 +1147,7 @@ CarouselFactory.Types = {
                 // If the amount of items that will be scrolled in loop is greater than the total number of items,
                 // then make clones of all items.
                 if (this.options.NVisibleItems + this.options.scrollStep > this.options.playlist.NItems) {
-                    this.cloneItems(this.items, this.playlistHolder);
+                    this.toClone = true;
                 }
             },
 
@@ -1169,7 +1172,8 @@ CarouselFactory.Types = {
                     itemShift = this.itemShifts[1] - ((scrollNTimes == 1) ? 0 : this.length * (scrollNTimes - 1));
                 }
 
-                if (scrollNTimes > 1) {
+                if (scrollNTimes > 1 || this.toClone) {
+                    this.toClone = false;
                     var tmp = this.options.NVisibleItems + this.options.scrollStep * scrollNTimes,
                         total = (this.options.playlist.NItems >= this.items.length)
                             ? this.options.playlist.NItems
