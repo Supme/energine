@@ -202,7 +202,7 @@ new TestCase('ACarousel. Static tests', {
         c.build();
         c.selectItem(SELECT_ITEM);
 
-        assertEquals(selected, SELECT_ITEM);
+        assertEquals(SELECT_ITEM, selected);
     },
 
     testCarouselWithoutPlaylist: function() {

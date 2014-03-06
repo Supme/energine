@@ -43,7 +43,7 @@ function buildCarousel(el, opts) {
 var NITEMS = 7;
 var ITEM_WIDTH = 100;
 
-new AsyncTestCase('Scroll carousel', {
+new AsyncTestCase('CarouselFactory.Types.Line', {
     setUp: function() {
         loadFixture('playlist.html');
         loadFixture('carousel.html');
@@ -226,9 +226,60 @@ new AsyncTestCase('Scroll carousel', {
         });
     },
 
+    test3F1B1BScrollsNV4SS2: function(queue) {
+        var NVisibleItems = 4,
+            scrollStep = 2,
+            NScrolls = 3,
+            playlist = this.playlist,
+            n,
+            expected = [],
+            carousel = buildCarousel(this.carouselEl, {fx: {duration:0}, playlist:playlist, NVisibleItems:NVisibleItems, scrollStep:scrollStep});
+
+        queue.call('scrollForward()', function(callbacks) {
+            for (n = 0; n < NScrolls; n++)
+                carousel.scrollForward();
+
+            // Prepare expected values
+            expected = [
+                [-600, -500, -400, -300, -200, -100, 0, 100, 200, 300],
+                [0,1,2,3,4,5,6,7,8,9]
+            ];
+            window.setTimeout(callbacks.add(function() {
+                assertItems(expected, carousel);
+                assertTrue(carousel.items[6].hasClass('active'));
+            }), DELAY);
+        });
+        queue.call('scrollBackward()', function(callbacks) {
+            carousel.scrollBackward();
+
+            // Prepare expected values
+            expected = [
+                [-300, -200, 0, 100],
+                [0,1,2,3]
+            ];
+            window.setTimeout(callbacks.add(function() {
+                assertItems(expected, carousel);
+                assertTrue(carousel.items[6].hasClass('active'));
+            }), DELAY);
+        });
+        queue.call('scrollBackward()', function(callbacks) {
+            carousel.scrollBackward();
+
+            // Prepare expected values
+            expected = [
+                [-300, 0, 100, 200],
+                [0,1,2,3]
+            ];
+            window.setTimeout(callbacks.add(function() {
+                assertItems(expected, carousel);
+                assertTrue(carousel.items[5].hasClass('active'));
+            }), DELAY);
+        });
+    },
+
     // helper functions:
     assertItems: function(expected, carousel) {
-        for (var n = 0; n < carousel.NItems; n++)
+        for (var n = 0; n < carousel.items.length; n++)
             assertEquals('item #' + n + ' \"left\" style value', expected[n], carousel.items[n].getStyle('left').toInt());
     }
 });

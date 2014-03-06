@@ -197,11 +197,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         this.element = el;
 
         this.setOptions(opts);
-        // This is need to save the reference to the playlist.
-        if (opts != undefined && 'playlist' in opts) {
-            this.options.playlist = opts.playlist;
-        }
-        this.checkOptions();
 
         /**
          * View-box element of the carousel that holds an playlist items.
@@ -212,21 +207,19 @@ var ACarousel = new Class(/** @lends ACarousel# */{
             throw 'View box of the carousel was not found.';
         }
 
+        // This is need to save the reference to the playlist.
+        if (opts != undefined && 'playlist' in opts) {
+            this.options.playlist = opts.playlist;
+        }
+        this.createPlaylist();
+        this.checkOptions();
+
         /**
          * Carousel ID.
          * @type {number}
          */
         this._id = ACarousel.assignID();
         this.element.store('id', this._id);
-
-        this.createPlaylist();
-        if (this.options.NVisibleItems === 'all') {
-            this.options.NVisibleItems = this.options.playlist.NItems;
-            this.options.scrollStep = 0;
-            this.options.fx.duration = 0;
-        } else if (this.options.NVisibleItems > this.options.playlist.NItems) {
-            this.options.NVisibleItems = this.options.playlist.NItems;
-        }
 
         /**
          * Cached items from playlist
@@ -376,6 +369,9 @@ var ACarousel = new Class(/** @lends ACarousel# */{
      * @param {number} id Item ID.
      */
     setActiveItem: function(id) {
+        var total = this.getTotal();
+
+        id = wrapIndices(id, 0, total);
         if (this.currentActiveID === id) {
             return;
         }
@@ -386,10 +382,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 el.removeClass(this.options.activeLabel);
             }
         }.bind(this));
-
-        var total = (this.options.playlist.NItems >= this.items.length)
-            ? this.options.playlist.NItems
-            : this.items.length;
 
         for (var n = 0; n < total / this.options.playlist.NItems; n++) {
             this.items[id + this.options.playlist.NItems * n].addClass(this.options.activeLabel);
@@ -481,7 +473,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
 
             // Calculate effects for scrolling
             // NOTE: Do not create unique effects for both opposite style. It is complex:
-            //      - each element must have only style and not both
+            //      - each element must have only one style and not both
             //      - before applying effect we need delete one style from the visible and new items and assign other
             //      - prepare an object with proper effects for the Fx.Elements
             var N = this.options.NVisibleItems + this.options.scrollStep;
@@ -579,9 +571,13 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          */
         checkOptions: function() {
             if (this.options.NVisibleItems !== 'all') {
-                this.options.NVisibleItems = this.checkNumbers('NVisibleItems', [this.options.NVisibleItems, 1, 1]);
-                this.options.scrollStep = this.checkNumbers('scrollStep', [this.options.scrollStep, 1, 1, this.options.NVisibleItems]);
+                this.options.NVisibleItems = this.checkNumbers('NVisibleItems', [this.options.NVisibleItems, 1, 1, this.options.playlist.NItems]);
+                this.options.scrollStep = this.checkNumbers('scrollStep', [this.options.scrollStep, 1, 1, this.options.playlist.NItems - this.options.NVisibleItems]);
                 this.options.fx.duration = this.checkNumbers('duration', [this.options.fx.duration, 700, 0]);
+            } else {
+                this.options.NVisibleItems = this.options.playlist.NItems;
+                this.options.scrollStep = 0;
+                this.options.fx.duration = 0;
             }
 
             // scrollDirection
@@ -592,19 +588,13 @@ var ACarousel = new Class(/** @lends ACarousel# */{
                 && this.options.scrollDirection != 'bottom'))
             {
                 this.options.scrollDirection = 'left';
-                console.warn('The option \"scrollDirection\" is incorrect. Its value reset to \"' + this.options.scrollDirection + '\"');
-            }
-
-            // playlist
-            if (this.options.playlist != null && !instanceOf(this.options.playlist, CarouselPlaylist)) {
-                this.options.playlist = null;
-                console.warn('The option for \"playlist\" is incorrect. Its value reset to \"null\"');
+                console.warn('The option "scrollDirection" is incorrect. Its value reset to "' + this.options.scrollDirection + '"');
             }
 
             // autoSelect
             if (typeOf(this.options.autoSelect) != 'boolean') {
                 this.options.autoSelect = !!this.options.autoSelect;
-                console.warn('The option \"autoSelect\" was not with type of \"boolean\". Its value set to \"' + this.options.autoSelect.toString() + '\"');
+                console.warn('The option "autoSelect" was not with type of "boolean". Its value set to "' + this.options.autoSelect.toString() + '"');
             }
         },
 
@@ -617,8 +607,9 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @protected
          */
         createPlaylist: function() {
-            // If the playlist is not explicitly specified, than try to get a playlist from the carousel.
-            if (this.options.playlist === null) {
+            if (this.options.playlist != null && !instanceOf(this.options.playlist, Playlist.HTML)) {
+                console.warn('The option for "playlist" is incorrect. The default Playlist.HTML will be tried to create.');
+
                 try {
                     this.playlistHolder = this.viewbox.getElement('.playlist_local');
                     this.options.playlist = new Playlist.HTML(this.playlistHolder);
@@ -782,17 +773,17 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          */
         getScrolledItems: function(scrollNTimes) {
             var itemsToScroll = [],
+                total = this.getTotal(),
                 ids,
                 newItems,
                 first,
-                n,
-                toClone;
+                n;
 
             // Collects all visible items
             for (n = 0; n < this.options.NVisibleItems; n++) {
                 var itemID = this.firstVisibleItemID + n;
-                if (itemID >= this.options.playlist.NItems) {
-                    itemID -= this.options.playlist.NItems;
+                if (itemID >= total) {
+                    itemID -= total;
                 }
 
                 itemsToScroll.push(this.items[itemID]);
@@ -837,12 +828,14 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         checkCache: function(ids) {
             var uncachedIDs = [],
                 uncachedEls,
+                id,
                 n;
 
             // Check if requested items are already uploaded.
             for (n = 0; n < ids.length; n++) {
-                if (!this.items[ids[n]]) {
-                    uncachedIDs.push(ids[n]);
+                id = wrapIndices(ids[n], 0, this.options.playlist.NItems);
+                if (!this.items[id]) {
+                    uncachedIDs.push(id);
                 }
             }
 
@@ -869,10 +862,22 @@ var ACarousel = new Class(/** @lends ACarousel# */{
             }, this);
 
             for (n = 0; n < uncachedIDs.length; n++) {
-                this.items[uncachedIDs[n]] = uncachedEls[n];
                 this.items.length++;
+                this.items[uncachedIDs[n]] = uncachedEls[n];
                 this.playlistHolder.grab(this.items[uncachedIDs[n]]);
             }
+        },
+
+        /**
+         * Get total amount of local items.
+         *
+         * @protected
+         * @returns {Number}
+         */
+        getTotal: function() {
+            return (this.options.playlist.NItems >= this.items.length)
+                ? this.options.playlist.NItems
+                : this.items.length;
         },
 
         /**
@@ -941,10 +946,10 @@ var ACarousel = new Class(/** @lends ACarousel# */{
 
             if (values[0] == null || isNaN(values[0]) || values[0] < values[2]) {
                 values[0] = values[1];
-                console.warn('The value for \"' + varName + '\" is incorrect. Its value reset to', values[0] + '.');
+                console.warn('The value for "' + varName + '" is incorrect. Its value reset to', values[0] + '.');
             } else if (values[3] !== undefined && values[0] > values[3]) {
                 values[0] = values[3];
-                console.warn('The value for \"' + varName + '\" is incorrect. Its value reset to', values[0] + '.');
+                console.warn('The value for "' + varName + '" is incorrect. Its value reset to', values[0] + '.');
             }
             return values[0];
         }
@@ -1139,19 +1144,6 @@ CarouselFactory.Types = {
 
         Protected: {
             /**
-             * Implementation of the abstract [specificPreparation]{@link ACarousel#specificPreparation} method.
-             * @memberOf CarouselFactory.Types.Loop#
-             * @protected
-             */
-            specificPreparation: function() {
-                // If the amount of items that will be scrolled in loop is greater than the total number of items,
-                // then make clones of all items.
-                if (this.options.NVisibleItems + this.options.scrollStep > this.options.playlist.NItems) {
-                    this.toClone = true;
-                }
-            },
-
-            /**
              * Implementation of the abstract [getNewVisibleItems]{@link ACarousel#getNewVisibleItems} method.
              *
              * @memberOf CarouselFactory.Types.Loop#
@@ -1169,17 +1161,13 @@ CarouselFactory.Types = {
                 if (this.direction === 1) {
                     itemShift = this.itemShifts[0];
                 } else {
-                    itemShift = this.itemShifts[1] - ((scrollNTimes == 1) ? 0 : this.length * (scrollNTimes - 1));
+                    itemShift = this.itemShifts[1] - ((scrollNTimes == 1) ? 0 : this.dShift * (scrollNTimes - 1));
                 }
 
-                if (scrollNTimes > 1 || this.toClone) {
-                    this.toClone = false;
-                    var tmp = this.options.NVisibleItems + this.options.scrollStep * scrollNTimes,
-                        total = (this.options.playlist.NItems >= this.items.length)
-                            ? this.options.playlist.NItems
-                            : this.items.length;
+                if (scrollNTimes > 1) {
+                    var tmp = this.options.NVisibleItems + this.options.scrollStep * scrollNTimes;
 
-                    var NClones = Math.floor(tmp / total);
+                    var NClones = Math.floor(tmp / this.getTotal());
                     if (NClones > 0) {
                         this.cloneItems(this.items, this.playlistHolder, NClones);
                         for (n = this.options.playlist.NItems; n < this.items.length; n++) {
@@ -1189,7 +1177,8 @@ CarouselFactory.Types = {
                 }
 
                 for (n = 0; n < ids.length; n++) {
-                    newItems[n] = this.items[ids[n]].setStyle(this.options.scrollDirection, this.length * n + itemShift);
+                    newItems[n] = this.items[wrapIndices(ids[n], 0, this.getTotal())];
+                    newItems[n].setStyle(this.options.scrollDirection, this.dShift * n + itemShift);
                 }
 
                 return newItems;
@@ -1216,7 +1205,7 @@ CarouselFactory.Types = {
                 }
 
                 for (n = 0; n < this.options.scrollStep * scrollNTimes; n++) {
-                    itemIDs[n] = wrapIndices(newItemID + n, 0, this.options.playlist.NItems, true);
+                    itemIDs[n] = newItemID + n;
                 }
 
                 return itemIDs;
@@ -1234,7 +1223,7 @@ CarouselFactory.Types = {
                 var total = (this.options.playlist.NItems >= this.items.length)
                     ? this.options.playlist.NItems
                     : this.items.length;
-                this.firstVisibleItemID = wrapIndices(this.firstVisibleItemID, 0, total, true);
+                this.firstVisibleItemID = wrapIndices(this.firstVisibleItemID, 0, total);
             },
 
             /**
