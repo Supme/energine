@@ -6,26 +6,6 @@
  * @version 1.0
  */
 
-/**
- * Function for inserting special predefined HTML fixture like playlist or carousel.
- *
- * @param {string} fixture File name.
- */
-function loadFixture(fixture) {
-    new Request({
-        async: false,
-        method: 'get',
-        url: '/test/fixtures/' + fixture,
-        onSuccess: function() {
-            var context = document.body.get('html');
-            document.body.set('html', context + this.response.text);
-        },
-        onFailure: function() {
-            console.error('Failed to load ', this.url);
-        }
-    }).send();
-}
-
 new TestCase('CarouselConnector initialisation', {
     setUp: function() {
         // Amount of items in the playlist

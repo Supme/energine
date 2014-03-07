@@ -9,9 +9,12 @@
  *     <li>[CarouselFactory.Types.Line]{@link CarouselFactory.Types.Line}</li>
  *     <li>[CarouselFactory.Controls]{@link CarouselFactory.Controls}</li>
  *     <li>[CarouselFactory.Controls.TwoButtons]{@link CarouselFactory.Controls.TwoButtons}</li>
- *     <li>[CarouselPlaylist]{@link CarouselPlaylist}</li>
+ *     <li>[APlaylist]{@link APlaylist}</li>
+ *     <li>[Playlist.HTML]{@link Playlist.HTML}</li>
+ *     <li>[Playlist.AJAX]{@link Playlist.AJAX}</li>
  *     <li>[CarouselConnector]{@link CarouselConnector}</li>
- *     <li>[Carousel]{@link Carousel}</li>
+ *     <li>[Carousel]{@link Carousel} (deprecated)</li>
+ *     <li>[CarouselPlaylist]{@link CarouselPlaylist} (deprecated)</li>
  * </ul>
  *
  * @author Valerii Zinchenko
@@ -165,11 +168,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
      * @type {number}
      */
     dShift: 0,
-
-    /**
-     * Fx object.
-     * @type {Fx.Elements|null}
-     */
 
     /**
      * Current scrolling direction.
@@ -342,11 +340,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         if (this.isLocked) {
             return;
         }
-        if (this.isEffectCompleted) {
-            this.scroll(1, 1);
-        } else {
-            this.extendScrolling(1);
+        if (!this.isEffectCompleted) {
+            this.firstVisibleItemID = this.firstVisibleItemID_bk;
         }
+
+        this.NScrolls++;
+        this.scroll(1, Math.abs(this.NScrolls));
     },
 
     /**
@@ -356,11 +355,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         if (this.isLocked) {
             return;
         }
-        if (this.isEffectCompleted) {
-            this.scroll(-1, 1);
-        } else {
-            this.extendScrolling(-1);
+        if (!this.isEffectCompleted) {
+            this.firstVisibleItemID = this.firstVisibleItemID_bk;
         }
+
+        this.NScrolls--;
+        this.scroll(-1, Math.abs(this.NScrolls));
     },
 
     /**
@@ -607,7 +607,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @protected
          */
         createPlaylist: function() {
-            if (this.options.playlist != null && !instanceOf(this.options.playlist, Playlist.HTML)) {
+            if (!instanceOf(this.options.playlist, Playlist.HTML)) {
                 console.warn('The option for "playlist" is incorrect. The default Playlist.HTML will be tried to create.');
 
                 try {
@@ -656,16 +656,12 @@ var ACarousel = new Class(/** @lends ACarousel# */{
          * @protected
          */
         applyStyles: function() {
-            var opts = this.options,
-                el = this.element;
+            var opts = this.options;
 
-            el.setStyles(opts.styles.element);
+            this.element.setStyles(opts.styles.element);
+            this.viewbox.setStyles(opts.styles.viewbox);
+            this.items.setStyles(opts.styles.item);
             delete opts.styles.element;
-            for (var selector in opts.styles) {
-                (selector in opts.classes)
-                    ? el.getElements(opts.classes[selector]).setStyles(opts.styles[selector])
-                    : el.getElements(selector).setStyles(opts.styles[selector]);
-            }
             delete opts.styles.viewbox;
 
             // Apply new width to the 'view-box'-element
@@ -686,6 +682,7 @@ var ACarousel = new Class(/** @lends ACarousel# */{
         disable: function() {
             this.options.NVisibleItems = this.options.playlist.NItems;
             this.options.scrollStep = 0;
+            this.isLocked = true;
         },
 
         /**
@@ -750,17 +747,6 @@ var ACarousel = new Class(/** @lends ACarousel# */{
 
             this.fx.elements = itemsToScroll;
             this.fx.start(effects);
-        },
-
-        /**
-         * Extended scroll()-method
-         * @param direction
-         */
-        extendScrolling: function(direction) {
-            this.NScrolls++;
-            this.firstVisibleItemID = this.firstVisibleItemID_bk;
-
-            this.scroll(direction, this.NScrolls + 1);
         },
 
         /**
@@ -1066,7 +1052,7 @@ var CarouselFactory = new Class(/** @lends CarouselFactory# */{
      * @property {Object} [carousel] [Options for the carousel]{@link ACarousel#options}.
      * @property {string} [carousel.type = 'loop'] Carousel type (can be: 'loop', 'line').
      * @property {Object} [controls] [Options for the controls]{@link ACarousel.AControls#options}.
-     * @property {string} [controls.type = 'twoButtons'] Type of the carousel controls (can be: 'twoButtons');
+     * @property {string} [controls.type = 'two-buttons'] Type of the carousel controls (can be: 'two-buttons', 'twoButtons', 'two-buttons, anotherType');
      */
     options: {
         carousel: {
@@ -1111,12 +1097,15 @@ var CarouselFactory = new Class(/** @lends CarouselFactory# */{
             this.options.carousel.playlist = opts.carousel.playlist;
         }
 
-        this.options.carousel.type = this.options.carousel.type.capitalize();
-        this.options.controls.type = this.options.controls.type.camelCase().capitalize();
+        this.options.carousel.type = this.options.carousel.type.replace(/\s+/g,'').capitalize();
+        this.options.controls.type = this.options.controls.type.replace(/\s+/g,'').camelCase().capitalize();
 
         this.carousel = new CarouselFactory.Types[this.options.carousel.type](el, this.options.carousel);
-        if (this.options.controls.type !== 'none') {
-            this.controls = new CarouselFactory.Controls[this.options.controls.type](this.carousel, this.options.controls);
+        if (this.options.controls.type !== 'None') {
+            var controlTypes = this.options.controls.type.split(',');
+            for (var n = 0; n < controlTypes.length; n++) {
+                this.controls = new CarouselFactory.Controls[controlTypes[n]](this.carousel, this.options.controls);
+            }
         }
 
         this.carousel.build();
@@ -1285,7 +1274,6 @@ CarouselFactory.Types = {
 
     /**
      * Line carousel. All items scrolled in the line, that means it has two ends of the scrolling.
-     * By reaching each end will corresponding event fired: [beginReached]{@link CarouselFactory.Line#beginReached} and [endReached]{@link CarouselFactory.Line#endReached}
      *
      * @augments ACarousel
      *
@@ -1294,15 +1282,42 @@ CarouselFactory.Types = {
      * @param {Object} [opts] [Options]{@link ACarousel#options} for the carousel.
      */
     Line: new Class(/** @lends CarouselFactory.Types.Line# */{
-            Extends: ACarousel,
+        Extends: ACarousel,
 
-            effects: [{},{},{},{}],
+        effects: [{},{},{},{}],
+
+        /**
+         * Defines whether the forward scrolling is allowed.
+         * @type {boolean}
+         */
+        allowForward: true,
+        /**
+         * Defines whether the backward scrolling is allowed.
+         * @type {boolean}
+         */
+        allowBackward: false,
+
+        /**
+         * Extension to the parent [scrollForward]{@link ACarousel#scrollForward} method.
+         */
+        scrollForward: function() {
+            if (this.allowForward) {
+                this.parent();
+            }
+        },
+
+        /**
+         * Extension to the parent [scrollBackward]{@link ACarousel#scrollBackward} method.
+         */
+        scrollBackward: function() {
+            if (this.allowBackward) {
+                this.parent();
+            }
+        },
 
             Protected: {
                 /**
                  * Implementation of the abstract [specificPreparation]{@link ACarousel#specificPreparation} method.
-                 *
-                 * @fires CarouselFactory.Types.Line#beginReached
                  *
                  * @memberOf CarouselFactory.Types.Line#
                  * @protected
@@ -1317,12 +1332,6 @@ CarouselFactory.Types = {
                     if (this.lastScrollStep == 0) {
                         this.lastScrollStep = this.options.scrollStep;
                     }
-
-                    /**
-                     * Fired when the carousel has the begin reached.
-                     * @event CarouselFactory.Types.Line#beginReached
-                     */
-                    this.fireEvent('beginReached');
 
                     var N = this.options.NVisibleItems + this.lastScrollStep;
                     this.effects[2] = this.createEffect(-this.dShift * this.lastScrollStep, N);
@@ -1378,9 +1387,6 @@ CarouselFactory.Types = {
                 /**
                  * Implementation of the abstract [getNewVisibleItemIDs]{@link ACarousel#getNewVisibleItemIDs} method.
                  *
-                 * @fires CarouselFactory.Types.Line#beginReached
-                 * @fires CarouselFactory.Types.Line#endReached
-                 *
                  * @memberOf CarouselFactory.Types.Line#
                  * @protected
                  * @param {number} scrollNTimes Scrolling multiplier.
@@ -1393,29 +1399,28 @@ CarouselFactory.Types = {
                     // helper variables
                         n;
 
+                    this.allowForward = true;
+                    this.allowBackward = true;
                     if (this.direction === 1) {
                         newItemID = this.firstVisibleItemID + this.options.NVisibleItems;
                     } else {
                         newItemID = this.firstVisibleItemID - this.options.scrollStep * scrollNTimes;
                     }
 
-                    // If new item id reaches the last item then disable clicked button
-                    if (newItemID <= 0 || newItemID + this.options.scrollStep * scrollNTimes >= this.options.playlist.NItems) {
-                        (this.direction == 1)
-                        /**
-                         * Fired when the carousel has the end reached.
-                         * @event CarouselFactory.Types.Line#endReached
-                         */
-                            ? this.fireEvent('endReached')
-                            : this.fireEvent('beginReached');
-                    }
-
-                    // Check if last item effects are needed to be applied.
                     /**
-                     * Defines whether the last scroll will made.
+                     * Defines whether the last scroll step should be applied.
                      * @type {boolean}
                      */
                     this.isLast = (newItemID + this.options.scrollStep * scrollNTimes) >= this.options.playlist.NItems || newItemID < 0;
+
+                    // If new item id reaches the last item then disable clicked button
+                    if (this.isLast || newItemID == 0) {
+                        if (this.direction == 1) {
+                            this.allowForward = false;
+                        } else {
+                            this.allowBackward = false;
+                        }
+                    }
 
                     // Get new item indexes
                     if (this.isLast) {
@@ -1564,19 +1569,15 @@ CarouselFactory.Controls = {
          *
          * @property {object} forward Button for scrolling forward.
          * @property {Element} forward.element Element in the DOM Tree for the button.
-         * @property {boolean} [forward.IsEnabled = true] Defines whether the forward button is enabled.
          * @property {object} backward Button for scrolling backward.
          * @property {Element} backward.element Element in the DOM Tree for the backward button.
-         * @property {boolean} [backward.IsEnabled = true] Defines whether the backward button is enabled.
          */
         controls: {
             forward: {
-                element: null,
-                isEnabled: true
+                element: null
             },
             backward: {
-                element: null,
-                isEnabled: true
+                element: null
             }
         },
 
@@ -1598,23 +1599,9 @@ CarouselFactory.Controls = {
                 scrollForward: this.carousel.scrollForward.bind(this.carousel),
                 scrollBackward: this.carousel.scrollBackward.bind(this.carousel)
             });
-            var self = this;
             this.carousel.addEvents({
                 enableScrolling: this.enable.bind(this),
-                disableScrolling: this.disable.bind(this),
-                scroll: function(direction) {
-                    if (!this[(direction == 1) ? 'backward' : 'forward' ].isEnabled) {
-                        this[ (direction == 1) ? 'backward' : 'forward' ].isEnabled = true;
-                    }
-                }.bind(this.controls),
-                endReached: function() {
-                    self.controls.forward.isEnabled = false;
-                    self.carousel.stop();
-                },
-                beginReached: function() {
-                    self.controls.backward.isEnabled = false;
-                    self.carousel.stop();
-                }
+                disableScrolling: this.disable.bind(this)
             });
         },
 
@@ -1626,25 +1613,21 @@ CarouselFactory.Controls = {
             this.controls.forward.element.addEvent(this.options.event, function (ev) {
                 ev.stop();
 
-                if (self.controls.forward.isEnabled) {
-                    /**
-                     * Fired when the forward button is enabled and clicked.
-                     * @event CarouselFactory.Controls.TwoButtons#scrollForward
-                     */
-                    self.fireEvent('scrollForward');
-                }
+                /**
+                 * Fired when the forward button is enabled and clicked.
+                 * @event CarouselFactory.Controls.TwoButtons#scrollForward
+                 */
+                self.fireEvent('scrollForward');
             });
 
             this.controls.backward.element.addEvent(this.options.event, function (ev) {
                 ev.stop();
 
-                if (self.controls.backward.isEnabled) {
-                    /**
-                     * Fired when the backward button is enabled and clicked.
-                     * @event CarouselFactory.Controls.TwoButtons#scrollBackward
-                     */
-                    self.fireEvent('scrollBackward');
-                }
+                /**
+                 * Fired when the backward button is enabled and clicked.
+                 * @event CarouselFactory.Controls.TwoButtons#scrollBackward
+                 */
+                self.fireEvent('scrollBackward');
             });
         },
 

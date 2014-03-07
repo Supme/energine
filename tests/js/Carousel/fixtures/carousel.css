@@ -46,7 +46,6 @@
 }
 
 .icon, .icon8x12, .icon12x12, .icon16x16, .icon20x20, .icon24x24, .icon32x32 {
-    background: url("common_icons.png") no-repeat scroll 100px 100px transparent;
     display: inline-block;
     overflow: hidden;
     position: relative;

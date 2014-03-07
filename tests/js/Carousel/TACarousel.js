@@ -2,49 +2,25 @@
  * @file Testing class ACarousel in Carousel.js 3.0.0
  *
  * @author Valerii Zinchenko
+ *
  * @version 1.0
  */
 
 /**
- * Function for inserting special predefined HTML fixture like playlist or carousel.
- *
- * @param {string} fixture File name in the directory ./fixtures.
- */
-function loadFixture(fixture) {
-    new Request({
-        async: false,
-        method: 'get',
-        url: '/test/fixtures/' + fixture,
-        onSuccess: function() {
-            var context = document.body.get('html');
-            document.body.set('html', context + this.response.text);
-        },
-        onFailure: function() {
-            console.error('Failed to load ', this.url);
-        }
-    }).send();
-}
-
-/**
- * Simple carousel builder.
+ * Simple ACarousel builder.
  *
  * @param {string|Element} el HTML element.
  * @param {Object} opts Carousel options.
  * @returns {ACarousel}
  */
-function buildCarousel(el, opts) {
+function buildACarousel(el, opts) {
     var carousel = new ACarousel(el, opts);
     carousel.build();
     return carousel;
 }
 
-// Amount of items in the playlist
-var NITEMS = 7;
-
 new TestCase('ACarousel. Static tests', {
     setUp: function() {
-
-
         loadFixture('playlist.html');
         loadFixture('carousel.html');
 
@@ -82,65 +58,67 @@ new TestCase('ACarousel. Static tests', {
         assertEquals(3, NThrows);
     },
     testCheckingOptionsNVisibleItems: function() {
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:-1}).options.NVisibleItems);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:0}).options.NVisibleItems);
-        assertEquals(this.playlist.NItems, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:this.playlist.NItems+1}).options.NVisibleItems);
-        assertEquals(this.playlist.NItems, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'all'}).options.NVisibleItems);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'abc'}).options.NVisibleItems);
-        assertEquals(5, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'5abc'}).options.NVisibleItems);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:[]}).options.NVisibleItems);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:{}}).options.NVisibleItems);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:false}).options.NVisibleItems);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:true}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:-1}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:0}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'abc'}).options.NVisibleItems);
+        assertEquals(5, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'5abc'}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:[]}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:{}}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:false}).options.NVisibleItems);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:true}).options.NVisibleItems);
+        assertEquals(NITEMS, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:this.playlist.NItems+1}).options.NVisibleItems);
+        assertEquals(NITEMS, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:'all'}).options.NVisibleItems);
     },
     testCheckingOptionsScrollStep: function() {
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:-1}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:0}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:2}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:[]}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:{}}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:false}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, scrollStep:true}).options.scrollStep);
-        assertEquals(3, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:3, scrollStep:4}).options.scrollStep);
-        assertEquals(1, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:3, scrollStep:'abc'}).options.scrollStep);
-        assertEquals(2, buildCarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:3, scrollStep:'2abc'}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:-1}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:0}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:2}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:[]}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:{}}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:false}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, scrollStep:true}).options.scrollStep);
+        assertEquals(3, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:3, scrollStep:4}).options.scrollStep);
+        assertEquals(3, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:4, scrollStep:3}).options.scrollStep);
+        assertEquals(3, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:4, scrollStep:4}).options.scrollStep);
+        assertEquals(1, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:3, scrollStep:'abc'}).options.scrollStep);
+        assertEquals(2, buildACarousel(this.carouselEl, {playlist:this.playlist, NVisibleItems:3, scrollStep:'2abc'}).options.scrollStep);
     },
     testCheckingOptionsScrollDirection: function() {
-        assertEquals('left', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'left'}).options.scrollDirection);
-        assertEquals('right', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'right'}).options.scrollDirection);
-        assertEquals('top', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'top'}).options.scrollDirection);
-        assertEquals('bottom', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'bottom'}).options.scrollDirection);
-        assertEquals('left', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'abc'}).options.scrollDirection);
-        assertEquals('left', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 5}).options.scrollDirection);
-        assertEquals('left', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: {}}).options.scrollDirection);
-        assertEquals('left', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: []}).options.scrollDirection);
-        assertEquals('left', buildCarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: true}).options.scrollDirection);
+        assertEquals('left',    buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'left'}).options.scrollDirection);
+        assertEquals('right',   buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'right'}).options.scrollDirection);
+        assertEquals('top',     buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'top'}).options.scrollDirection);
+        assertEquals('bottom',  buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'bottom'}).options.scrollDirection);
+        assertEquals('left',    buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 'abc'}).options.scrollDirection);
+        assertEquals('left',    buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: 5}).options.scrollDirection);
+        assertEquals('left',    buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: {}}).options.scrollDirection);
+        assertEquals('left',    buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: []}).options.scrollDirection);
+        assertEquals('left',    buildACarousel(this.carouselEl, {playlist:this.playlist, scrollDirection: true}).options.scrollDirection);
     },
     testCheckingOptionsFxDuration: function() {
-        assertEquals(700, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:-1}}).options.fx.duration);
-        assertEquals(0, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:0}}).options.fx.duration);
-        assertEquals(2, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:2}}).options.fx.duration);
-        assertEquals(700, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:[]}}).options.fx.duration);
-        assertEquals(700, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:{}}}).options.fx.duration);
-        assertEquals(700, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:false}}).options.fx.duration);
-        assertEquals(700, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:true}}).options.fx.duration);
-        assertEquals(700, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:'abc'}}).options.fx.duration);
-        assertEquals(2, buildCarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:'2abc'}}).options.fx.duration);
+        assertEquals(700, buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:-1}}).options.fx.duration);
+        assertEquals(0,   buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:0}}).options.fx.duration);
+        assertEquals(2,   buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:2}}).options.fx.duration);
+        assertEquals(700, buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:[]}}).options.fx.duration);
+        assertEquals(700, buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:{}}}).options.fx.duration);
+        assertEquals(700, buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:false}}).options.fx.duration);
+        assertEquals(700, buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:true}}).options.fx.duration);
+        assertEquals(700, buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:'abc'}}).options.fx.duration);
+        assertEquals(2,   buildACarousel(this.carouselEl, {playlist:this.playlist, fx: {duration:'2abc'}}).options.fx.duration);
     },
     testCheckingOptionsAutoSelect: function() {
-        assertEquals(true, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:true}).options.autoSelect);
-        assertEquals(true, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:1}).options.autoSelect);
-        assertEquals(true, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:'t'}).options.autoSelect);
-        assertEquals(true, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:[]}).options.autoSelect);
-        assertEquals(true, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:{}}).options.autoSelect);
-        assertEquals(false, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:false}).options.autoSelect);
-        assertEquals(false, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:0}).options.autoSelect);
-        assertEquals(false, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:''}).options.autoSelect);
-        assertEquals(false, buildCarousel(this.carouselEl, {playlist:this.playlist, autoSelect:null}).options.autoSelect);
+        assertEquals(true,  buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:true}).options.autoSelect);
+        assertEquals(true,  buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:1}).options.autoSelect);
+        assertEquals(true,  buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:'t'}).options.autoSelect);
+        assertEquals(true,  buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:[]}).options.autoSelect);
+        assertEquals(true,  buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:{}}).options.autoSelect);
+        assertEquals(false, buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:false}).options.autoSelect);
+        assertEquals(false, buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:0}).options.autoSelect);
+        assertEquals(false, buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:''}).options.autoSelect);
+        assertEquals(false, buildACarousel(this.carouselEl, {playlist:this.playlist, autoSelect:null}).options.autoSelect);
     },
     testCheckingOptionsPlaylist: function() {
         this.playlist.items.inject($$('#carouselID .carousel_viewbox .playlist_local')[0]);
-        assertEquals(this.playlist, buildCarousel(this.carouselEl, {playlist:this.playlist}).options.playlist);
+        assertEquals(this.playlist, buildACarousel(this.carouselEl, {playlist:this.playlist}).options.playlist);
     },
     testEventEnableScrolling: function() {
         var c = new ACarousel(this.carouselEl, {playlist:this.playlist});
@@ -171,7 +149,7 @@ new TestCase('ACarousel. Static tests', {
         N = N || this.playlist.NItems;
 
         // Prepare expected positions
-        carousel = buildCarousel(this.carouselEl, {playlist: this.playlist, NVisibleItems:N});
+        carousel = buildACarousel(this.carouselEl, {playlist: this.playlist, NVisibleItems:N});
         itemWidth = carousel.items[0].getSize().x;
         for (n = 0; n < carousel.options.NVisibleItems; n++)
             expected.push(n*itemWidth);
@@ -186,10 +164,23 @@ new TestCase('ACarousel. Static tests', {
             this.testItemPosition(--N);
     },
     testSelectItem: function() {
-        var carousel = buildCarousel(this.carouselEl, {playlist: this.playlist, NVisibleItems:5});
+        var carousel = buildACarousel(this.carouselEl, {playlist: this.playlist, NVisibleItems:5});
         carousel.selectItem(3);
         assertFalse(carousel.items[0].hasClass('active'));
         assertTrue(carousel.items[3].hasClass('active'));
+    },
+    testFalseAutoSelect: function () {
+        var carousel = buildCarouselLoop(this.carouselEl, {autoSelect:false, NVisibleItems:1, scrollStep:1, playlist:this.playlist, fx: {duration:0}});
+        carousel.scrollForward();
+
+        assertTrue(carousel.items[0].hasClass('active'));
+    },
+    testTrueAutoSelect: function (queue) {
+        var carousel = buildCarouselLoop(this.carouselEl, {autoSelect:true, NVisibleItems:1, scrollStep:1, playlist:this.playlist, fx: {duration:0}});
+        carousel.scrollForward();
+
+        assertFalse(carousel.items[0].hasClass('active'));
+        assertTrue(carousel.items[1].hasClass('active'));
     },
     testEventSelectItem: function() {
         var SELECT_ITEM = 3,

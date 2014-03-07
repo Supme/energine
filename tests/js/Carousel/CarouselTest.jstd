@@ -6,6 +6,7 @@ load:
   - ../../../core/modules/share/scripts/mootools-more-debug.js
   - ../../../core/modules/share/scripts/mootools-ext-debug.js
   - ../../../core/modules/share/scripts/Carousel.js
+  - globals.js
 
 test:
   - TACarousel.js
