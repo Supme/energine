@@ -1809,7 +1809,7 @@ var Playlist = /** @lends Playlist */{
          * Implementation of the abstract [initItems]{@link APlaylist#initItems} method.
          */
         initItems: function() {
-            this.request.url = this.src;
+            this.request.options.url = this.src;
             this.request.addEvents({
                 success: function(response) {
                     if (instanceOf(response, Array)) {
