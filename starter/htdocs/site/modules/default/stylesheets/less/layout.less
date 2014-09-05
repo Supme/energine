@@ -1,0 +1,83 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+
+  .base {
+    min-height: 100%;
+  }
+}
+/* ----- main menu ----- */
+.main_menu {
+  padding: 5px 0;
+  background: #F7F7F9;
+  border-radius: 4px;
+  list-style: none;
+
+  .main_menu_item .main_menu,
+  .main_menu_item {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .main_menu_item .main_menu_item a {
+    font-size: 90%;
+  }
+
+  .main_menu_item .main_menu_item .main_menu_item a {
+    font-size: 85%;
+  }
+
+  .main_menu_item .main_menu_item .main_menu_item .main_menu_item a {
+    font-size: 80%;
+  }
+
+  .main_menu_item.active > a {
+    font-weight: bold;
+    border-right: 5px solid #428bca;
+    background: #f0f0f0;
+  }
+}
+.main_menu_item a,
+.home a {
+  display: block;
+  padding: 7px 15px;
+  color: #428bca;
+}
+.main_menu_item a:hover,
+.main_menu_item a:active,
+.main_menu_item.active a:hover,
+.main_menu_item.active a:active,
+.home a:hover,
+.home a:active {
+  background: #428bca;
+  color: #F7F7F9;
+  text-decoration: none;
+}
+
+/* --- black theme for main menu --- */
+.black .main_menu {
+  background: #474544;
+}
+.black .main_menu_item a,
+.black .home a {
+  color: #eee;
+}
+.black .main_menu_item a:hover,
+.black .main_menu_item a:active,
+.black .main_menu_item.active a:hover,
+.black .main_menu_item.active a:active,
+.black .home a:hover,
+.black .home a:active {
+  background: #eee;
+  color: #474544;
+}
+.black .main_menu_item.active > a {
+  border-right: 5px solid #eee;
+  background: #3D3B3A;
+}
+/* --- /black theme for main menu --- */
+/* ----- /main menu ----- */

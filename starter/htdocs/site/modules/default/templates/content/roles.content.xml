@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<content html_class="colset colset2">
-    <container name="left" column="column" html_class="col col1">
+<content html_class="row">
+    <container name="left" column="column" html_class="col-lg-3">
         <container name="mainMenuContainer" block="beta" widget="widget">
             <component name="mainMenu" module="share" class="PageList">
                 <params>
@@ -15,7 +15,7 @@
             <component name="loginForm" module="user" class="LoginForm"/>
         </container>
     </container>
-    <container name="center" column="column" html_class="col col2 last_col">
+    <container name="center" column="column" html_class="col-lg-9">
         <container name="roleContainer" block="alfa" widget="static">
             <component name="roleEditor" module="user" class="RoleEditor">
                 <params>

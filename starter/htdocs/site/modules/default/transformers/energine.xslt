@@ -16,12 +16,21 @@
                 <xsl:apply-templates select="." mode="scripts"/>
                 -->
                 <xsl:apply-templates select="." mode="head"/>
-
+                <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+                <script type="text/javascript">
+                    $.noConflict();
+                </script>
+                <script type="text/javascript" src="scripts/default/bootstrap/collapse.js"></script>
             </head>
             <body>
                 <xsl:apply-templates select="document"/>
             </body>
         </html>
+    </xsl:template>
+
+    <xsl:template match="/" mode="stylesheets">
+        <!-- файлы стилей для текущего варианта дизайна -->
+        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/less/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
     </xsl:template>
 
     <!-- page body -->
@@ -35,25 +44,34 @@
             <img src="{$COMPONENTS[@class='CrossDomainAuth']/@authURL}?return={$COMPONENTS[@class='CrossDomainAuth']/@returnURL}" width="1" height="1" style="display:none;" alt="" onload="document.location = document.location.href;"/>
         </xsl:if>
         <div class="base">
-            <div class="header">
-                <h1 class="logo">
-                    <a>
-                        <xsl:if test="$DOC_PROPS[@name='default']!=1">
-                            <xsl:attribute name="href"><xsl:value-of select="$BASE"/><xsl:value-of select="$LANG_ABBR"/></xsl:attribute>
-                        </xsl:if>
-                        <img src="images/{$FOLDER}/energine_logo.png" width="246" height="64" alt="Energine"/>
-                    </a>
-                </h1>
-                <xsl:apply-templates select="$COMPONENTS[@class='LangSwitcher']"/>
+            <div class="container-fluid">
+                <header>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                            <h1>
+                                <a>
+                                    <xsl:if test="$DOC_PROPS[@name='default']!=1">
+                                        <xsl:attribute name="href"><xsl:value-of select="$BASE"/><xsl:value-of select="$LANG_ABBR"/></xsl:attribute>
+                                    </xsl:if>
+                                    <img src="images/{$FOLDER}/energine_logo.png" width="246" height="64" alt="Energine"/>
+                                </a>
+                            </h1>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                            <xsl:apply-templates select="$COMPONENTS[@class='LangSwitcher']"/>
+                        </div>
+                    </div>
+                </header>
+                <div class="main">
+                    <xsl:apply-templates select="$COMPONENTS[@name='breadCrumbs']"/>
+                    <xsl:apply-templates select="content"/>
+                </div>
             </div>
-            <div class="main">
-                <xsl:apply-templates select="$COMPONENTS[@name='breadCrumbs']"/>
-                <xsl:apply-templates select="content"/>
-            </div>
-            <div class="footer">
-                <xsl:apply-templates select="$COMPONENTS[@name='footerTextBlock']"/>
-            </div>
+            <div class="footer_fit"></div>
         </div>
+        <footer>
+            <xsl:apply-templates select="$COMPONENTS[@name='footerTextBlock']"/>
+        </footer>
     </xsl:template>
     <!-- /page body -->
 
@@ -61,14 +79,14 @@
     <xsl:template match="component[@class='PageList' or @class='NavigationMenu']">
         <xsl:apply-templates/>
     </xsl:template>
-    
+
     <xsl:template match="recordset[ancestor::component[@class='PageList'] or ancestor::component[@class='NavigationMenu']]">
         <xsl:if test="not(@empty)">
             <ul class="menu clearfix">
                 <xsl:apply-templates/>
             </ul>
         </xsl:if>
-    </xsl:template>    
+    </xsl:template>
 
     <xsl:template match="record[ancestor::component[@class='PageList']]">
         <li class="menu_item">
@@ -136,7 +154,7 @@
 
     <xsl:template match="recordset[ancestor::component[@name='mainMenu']]">
         <xsl:if test="not(@empty)">
-            <ul class="main_menu clearfix">
+            <ul class="menu clearfix">
                 <xsl:apply-templates/>
             </ul>
         </xsl:if>
@@ -144,16 +162,30 @@
 
     <xsl:template match="recordset[parent::component[@name='mainMenu']]">
         <xsl:if test="not(@empty)">
-            <ul class="main_menu clearfix">
-                <xsl:if test="$DOC_PROPS[@name='default'] != 1">
-                    <li class="home">
-                        <a href="{$BASE}">
-                            <xsl:value-of select="$TRANSLATION[@const='TXT_HOME']" disable-output-escaping="yes"/>
-                        </a>
-                    </li>
-                </xsl:if>
-                <xsl:apply-templates/>
-            </ul>
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-menu">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div class="collapse navbar-collapse" id="main-menu">
+                        <ul class="main_menu clearfix">
+                            <xsl:if test="$DOC_PROPS[@name='default'] != 1">
+                                <li class="home">
+                                    <a href="{$BASE}">
+                                        <xsl:value-of select="$TRANSLATION[@const='TXT_HOME']" disable-output-escaping="yes"/>
+                                    </a>
+                                </li>
+                            </xsl:if>
+                            <xsl:apply-templates/>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
         </xsl:if>        
     </xsl:template>
 
@@ -180,14 +212,14 @@
 
     <xsl:template match="recordset[parent::component[@class='LangSwitcher']]">
         <xsl:if test="count(record)&gt;1">
-            <ul class="lang_switcher">
+            <ul class="nav navbar-nav navbar-right pull-right">
                 <xsl:apply-templates/>
             </ul>
         </xsl:if>
     </xsl:template>
 
     <xsl:template match="record[ancestor::component[@class='LangSwitcher']]">
-        <li class="lang_switcher_item">
+        <li>
             <a>
                 <xsl:if test="$LANG_ID != field[@name='lang_id']">
                     <xsl:attribute name="href"><xsl:value-of select="field[@name='lang_url']"/></xsl:attribute>
@@ -284,5 +316,62 @@
         </xsl:if>
     </xsl:template>
     <!-- /QuestionEditor -->
+
+    <!-- компонент LoginForm  -->
+    <!-- режим гостя -->
+    <xsl:template match="component[@sample='LoginForm']">
+        <form method="post" action="{@action}" class="base_form login_form">
+            <input type="hidden" name="componentAction" value="{@componentAction}" />
+            <xsl:apply-templates/>
+        </form>
+    </xsl:template>
+
+    <xsl:template match="recordset[parent::component[@sample='LoginForm']]">
+        <div id="{generate-id(.)}" single_template="{$BASE}{$LANG_ABBR}{../@single_template}" template="{$BASE}{$LANG_ABBR}{../@template}">
+            <xsl:apply-templates/>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="control[(@id='restore') and (@mode!=0)][ancestor::component[@sample='LoginForm']]">
+        <div class="restore_link">
+            <a href="{$BASE}{$LANG_ABBR}{@click}"><xsl:value-of select="@title" /></a>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="control[(@id='auth.facebook') and not(@disabled)][ancestor::component[@sample='LoginForm']]">
+        <a href="#" id="fbAuth" onclick="return false;"><xsl:value-of select="@title"/></a>
+        <script type="text/javascript">
+            FBL.set('<xsl:value-of select="@appID"/>');
+        </script>
+        <div id="fb-root"></div>
+    </xsl:template>
+
+    <xsl:template match="control[(@id='auth.vk') and not(@disabled)][ancestor::component[@sample='LoginForm']]">
+        <script type="text/javascript" src="//vk.com/js/api/openapi.js?95"></script>
+        <a href="#" id="vkAuth" onclick="return false;"><xsl:value-of select="@title"/></a>
+        <script type="text/javascript">
+            VKI.set('<xsl:value-of select="@appID"/>');
+        </script>
+    </xsl:template>
+
+    <xsl:template match="field[@name='message'][ancestor::component[@sample='LoginForm']]">
+        <div class="error_message">
+            <xsl:apply-templates/>
+        </div>
+    </xsl:template>
+
+    <!-- режим пользователя за логином -->
+    <xsl:template match="recordset[parent::component[@sample='LoginForm'][@componentAction='showLogoutForm']]">
+        <div>
+            <xsl:apply-templates/>
+        </div>
+    </xsl:template>
+
+    <xsl:template match="record[ancestor::component[@sample='LoginForm'][@componentAction='showLogoutForm']]">
+        <span class="user_greeting"><xsl:value-of select="$TRANSLATION[@const='TXT_USER_GREETING']"/></span><xsl:value-of select="$NBSP" disable-output-escaping="yes" />
+        <span class="user_name"><xsl:value-of select="$TRANSLATION[@const='TXT_USER_NAME']"/>:<xsl:value-of select="$NBSP" disable-output-escaping="yes" /><strong><xsl:value-of select="field[@name='u_name']"/></strong></span><br/>
+        <span class="user_role"><xsl:value-of select="$TRANSLATION[@const='TXT_ROLE_TEXT']"/>:<xsl:value-of select="$NBSP" disable-output-escaping="yes" /><strong><xsl:value-of select="field[@name='role_name']"/></strong></span>
+    </xsl:template>
+    <!-- /компонент LoginForm  -->
     
 </xsl:stylesheet>

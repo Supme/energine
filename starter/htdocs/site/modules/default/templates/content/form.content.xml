@@ -3,11 +3,11 @@
     <container name="left" column="column" html_class="col-lg-3">
         <container name="mainMenuContainer" block="beta" widget="widget">
             <component name="mainMenu" module="share" class="PageList">
-                <params>
-                    <param name="tags">menu</param>
-                    <param name="recursive">1</param>
-                    <param name="config">core/modules/share/MainMenu.component.xml</param>
-                </params>
+               <params>
+                   <param name="tags">menu</param>
+                   <param name="recursive">1</param>
+                   <param name="config">core/modules/share/MainMenu.component.xml</param>
+               </params>
             </component>
         </container>
         <container name="leftAdBlock"/>
@@ -16,10 +16,11 @@
         </container>
     </container>
     <container name="center" column="column" html_class="col-lg-9">
-        <container name="siteContainer" block="alfa" widget="static">
-            <component name="siteEditor" module="share" class="SiteEditor">
+        <container name="formEditorContainer" block="alfa"  widget="static">
+            <component name="form" class="Form" module="forms">
                 <params>
-                    <param name="rights">3</param>
+                    <param name="id">0</param>
+                    <param name="noCaptcha">1</param>
                 </params>
             </component>
         </container>
