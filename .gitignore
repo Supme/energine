@@ -1,4 +1,5 @@
 .idea/
+starter/image-cache/*
 starter/htdocs/core/
 starter/htdocs/images/
 starter/htdocs/scripts/
@@ -8,3 +9,6 @@ starter/htdocs/system.jsmap.php
 starter/htdocs/templates/
 
 starter/configs/system.config.anton.php
+starter/htdocs/logs/*
+starter/configs/system.config.pavka.php
+vendor/
