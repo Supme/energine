@@ -283,7 +283,7 @@ class Form extends DBDataSet {
 
 
             //$this->prepare();
-            $this->response->redirectToCurrentSection('send/success/');
+            $this->response->redirectToCurrentSection('success/');
 
         } catch (\Exception $e) {
             $this->failure($e->getMessage(), $data);
