@@ -20,6 +20,26 @@
         </xsl:if>
     </xsl:template>
 
+    <xsl:template match="field[ancestor::component[@type='form' and @exttype!='grid']]" mode="field_input">
+        <input class="form-control">
+            <xsl:call-template name="FORM_ELEMENT_ATTRIBUTES"/>
+        </input>
+    </xsl:template>
+
+    <!-- поле для почтового адреса (email) -->
+    <xsl:template match="field[@type='email'][ancestor::component[@type='form' and @exttype!='grid']]" mode="field_input">
+        <input class="form-control">
+            <xsl:call-template name="FORM_ELEMENT_ATTRIBUTES"/>
+        </input>
+    </xsl:template>
+
+    <!-- поле для телефона (phone)-->
+    <xsl:template match="field[@type='phone'][ancestor::component[@type='form' and @exttype!='grid']]" mode="field_input">
+        <input class="form-control">
+            <xsl:call-template name="FORM_ELEMENT_ATTRIBUTES"/>
+        </input>
+    </xsl:template>
+
     <!-- поле логического типа (boolean) -->
     <xsl:template match="field[@type='boolean'][ancestor::component[@type='form' and @exttype!='grid']]" mode="field_input">
         <xsl:variable name="FIELD_NAME">
