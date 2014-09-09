@@ -36,10 +36,6 @@ class Form extends DBDataSet {
      */
     protected $saver;
 
-    /*
-     * @var FormResults
-     */
-    //private $results;
 
     /**
      * @copydoc DBDataSet::__construct
@@ -88,6 +84,9 @@ class Form extends DBDataSet {
 
     /**
      * Call this by failure with captcha.
+     *
+     * @param $errorMessage
+     * @param $data
      */
     protected function failure($errorMessage, $data) {
         $data = array_values($data);
@@ -192,7 +191,8 @@ class Form extends DBDataSet {
     }
 
     /**
-     * Send.
+     * Send
+     * @throws \Exception
      */
     protected function send() {
         $postTableName = str_replace('.', '_', $this->getTableName());
@@ -283,7 +283,7 @@ class Form extends DBDataSet {
 
 
             //$this->prepare();
-            $this->response->redirectToCurrentSection('success/');
+            $this->response->redirectToCurrentSection('send/success/');
 
         } catch (\Exception $e) {
             $this->failure($e->getMessage(), $data);
