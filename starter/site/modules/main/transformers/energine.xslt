@@ -6,7 +6,12 @@
     <!--Собственно отсюда и пляшем-->
     <!--Здесь можно сколько угодно дописывать, главное вызвать обработчки рута в моде head?в котором сосредоточены все команды необходимые для корректного формирования страницы-->
     <xsl:template match="/">
-        <html>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if lt IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 lt-ie7"&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 "&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if IE 8]&gt; &lt;html class="no-js lt-ie9"&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if gt IE 8]&gt; &lt;!--&gt;</xsl:text>
+        <html  class="no-js">
+        <xsl:text disable-output-escaping="yes">&lt;!--&lt;![endif]--&gt;</xsl:text>
             <head>
                 <!--
                 Внутри происходят вызовы
@@ -14,6 +19,7 @@
                 <xsl:apply-templates select="." mode="title"/>
                 <xsl:apply-templates select="." mode="stylesheets"/>
                 <xsl:apply-templates select="." mode="scripts"/>
+                <xsl:apply-templates select="." mode="og"/>
                 -->
                 <xsl:apply-templates select="." mode="head"/>
                 <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -26,6 +32,15 @@
                 <xsl:apply-templates select="document"/>
             </body>
         </html>
+    </xsl:template>
+
+    <xsl:template match="/" mode="stylesheets">
+        <!-- файлы стилей для текущего варианта дизайна -->
+        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
+    </xsl:template>
+
+    <xsl:template match="/" mode="scripts">
+        <xsl:if test="not($DOC_PROPS[@name='single'])"><!-- User JS is here--></xsl:if>
     </xsl:template>
 
     <xsl:template match="/" mode="stylesheets">
@@ -307,7 +322,7 @@
 
     <!-- QuestionEditor -->
     <xsl:template match="/document/translations[translation[@component='questionEditor']]">
-        <xsl:if test="$COMPONENTS[@class='QuestionEditor']/@type='form'">
+        <xsl:if test="$COMPONENTS[@class='QuestionEditor']/@type='foвщсгьутеrm'">
             <script type="text/javascript">
                 <xsl:for-each select="translation">
                     Energine.translations.set('<xsl:value-of select="@const"/>', '<xsl:value-of select="."/>');
