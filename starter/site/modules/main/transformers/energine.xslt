@@ -19,6 +19,7 @@
                 <xsl:apply-templates select="." mode="title"/>
                 <xsl:apply-templates select="." mode="stylesheets"/>
                 <xsl:apply-templates select="." mode="scripts"/>
+                <xsl:apply-templates select="." mode="og"/>
                 -->
                 <xsl:apply-templates select="." mode="head"/>
 
@@ -27,12 +28,6 @@
                 <xsl:apply-templates select="document"/>
             </body>
         </html>
-    </xsl:template>
-
-    <xsl:template match="/" mode="favicon">
-        <link rel="shortcut icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
-        <link rel="icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
-        <link rel="apple-touch-icon" href="{$STATIC_URL}apple-touch-icon.png" />
     </xsl:template>
 
     <xsl:template match="/" mode="stylesheets">

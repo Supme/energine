@@ -180,30 +180,27 @@
         </xsl:choose></title>
     </xsl:template>
 
-    <!--@deprecated must be defined in site/energine.xslt-->
+    <!--Favicon template-->
     <xsl:template match="/" mode="favicon">
-        <link rel="shortcut icon" href="{$STATIC_URL}images/energine.ico" type="image/x-icon"/>
+        <link rel="shortcut icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
+        <link rel="icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
+        <link rel="apple-touch-icon" href="{$STATIC_URL}apple-touch-icon.png" />
     </xsl:template>
+
     <!--@deprecated must be defined in site/energine.xslt-->
+    <!--Stylesheets template -->
     <xsl:template match="/" mode="stylesheets">
         <!-- файлы стилей для текущего варианта дизайна -->
-        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/main.css" rel="stylesheet" type="text/css"
-              media="Screen, projection"/>
-        <!-- отдельный файл стилей для IE подключается через условные комментарии -->
-        <xsl:text disable-output-escaping="yes">&lt;!--[if IE]&gt;</xsl:text>
-        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/ie.css" rel="stylesheet" type="text/css"
-              media="Screen, projection"/>
-        <xsl:text disable-output-escaping="yes">&lt;![endif]--&gt;</xsl:text>
-        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/print.css" rel="stylesheet" type="text/css" media="print"/>
-        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/handheld.css" rel="stylesheet" type="text/css" media="handheld"/>
+        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
     </xsl:template>
 
     <!--@deprecated must be defined in site/energine.xslt-->
+    <!-- Scripts template-->
     <xsl:template match="/" mode="scripts">
         <xsl:if test="not($DOC_PROPS[@name='single'])"><!-- User JS is here--></xsl:if>
-
     </xsl:template>
 
+    <!-- Open graph template-->
     <xsl:template match="/" mode="og">
         <xsl:for-each select="document/og/property">
             <meta property="og:{@name}" content="{.}" />
