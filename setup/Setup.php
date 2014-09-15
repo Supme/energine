@@ -998,6 +998,8 @@ final class Setup {
                                     &&
                                     (strpos($pi['filename'], 'mootools-more') === false)
                                     &&
+                                    (strpos($pi['filename'], 'modernizr') === false)
+                                    &&
                                     (strpos($pi['filename'], 'mootools-ext') === false)
                                     &&
                                     (strpos($pi['filename'], 'jwplayer') === false)
