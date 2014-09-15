@@ -22,11 +22,6 @@
                 <xsl:apply-templates select="." mode="og"/>
                 -->
                 <xsl:apply-templates select="." mode="head"/>
-                <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-                <script type="text/javascript">
-                    $.noConflict();
-                </script>
-                <script type="text/javascript" src="scripts/default/bootstrap/collapse.js"></script>
             </head>
             <body>
                 <xsl:apply-templates select="document"/>
@@ -36,17 +31,20 @@
 
     <xsl:template match="/" mode="stylesheets">
         <!-- файлы стилей для текущего варианта дизайна -->
-        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
+        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/less/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
     </xsl:template>
 
     <xsl:template match="/" mode="scripts">
-        <xsl:if test="not($DOC_PROPS[@name='single'])"><!-- User JS is here--></xsl:if>
+        <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript">
+            $.noConflict();
+        </script>
+        <xsl:if test="not($DOC_PROPS[@name='single'])">
+
+        </xsl:if>
+        <script type="text/javascript" src="{STATIC_URL}scripts/{$FOLDER}/bootstrap/collapse.js"></script>
     </xsl:template>
 
-    <xsl:template match="/" mode="stylesheets">
-        <!-- файлы стилей для текущего варианта дизайна -->
-        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/less/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
-    </xsl:template>
 
     <!-- page body -->
     <xsl:template match="document">
