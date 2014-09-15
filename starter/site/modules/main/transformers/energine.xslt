@@ -6,7 +6,12 @@
     <!--Собственно отсюда и пляшем-->
     <!--Здесь можно сколько угодно дописывать, главное вызвать обработчки рута в моде head?в котором сосредоточены все команды необходимые для корректного формирования страницы-->
     <xsl:template match="/">
-        <html>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if lt IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 lt-ie7"&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 "&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if IE 8]&gt; &lt;html class="no-js lt-ie9"&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if gt IE 8]&gt; &lt;!--&gt;</xsl:text>
+        <html  class="no-js">
+        <xsl:text disable-output-escaping="yes">&lt;!--&lt;![endif]--&gt;</xsl:text>
             <head>
                 <!--
                 Внутри происходят вызовы
@@ -22,6 +27,21 @@
                 <xsl:apply-templates select="document"/>
             </body>
         </html>
+    </xsl:template>
+
+    <xsl:template match="/" mode="favicon">
+        <link rel="shortcut icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
+        <link rel="icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
+        <link rel="apple-touch-icon" href="{$STATIC_URL}apple-touch-icon.png" />
+    </xsl:template>
+
+    <xsl:template match="/" mode="stylesheets">
+        <!-- файлы стилей для текущего варианта дизайна -->
+        <link href="{$STATIC_URL}stylesheets/{$FOLDER}/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
+    </xsl:template>
+
+    <xsl:template match="/" mode="scripts">
+        <xsl:if test="not($DOC_PROPS[@name='single'])"><!-- User JS is here--></xsl:if>
     </xsl:template>
 
     <!-- page body -->
@@ -41,7 +61,7 @@
                         <xsl:if test="$DOC_PROPS[@name='main']!=1">
                             <xsl:attribute name="href"><xsl:value-of select="$BASE"/><xsl:value-of select="$LANG_ABBR"/></xsl:attribute>
                         </xsl:if>
-                        <img src="images/{$FOLDER}/energine_logo.png" width="246" height="64" alt="Energine"/>
+                        <img src="{$STATIC_URL}images/{$FOLDER}/energine_logo.png" width="246" height="64" alt="Energine"/>
                     </a>
                 </h1>
                 <xsl:apply-templates select="$COMPONENTS[@class='LangSwitcher']"/>
@@ -275,7 +295,7 @@
 
     <!-- QuestionEditor -->
     <xsl:template match="/document/translations[translation[@component='questionEditor']]">
-        <xsl:if test="$COMPONENTS[@class='QuestionEditor']/@type='form'">
+        <xsl:if test="$COMPONENTS[@class='QuestionEditor']/@type='foвщсгьутеrm'">
             <script type="text/javascript">
                 <xsl:for-each select="translation">
                     Energine.translations.set('<xsl:value-of select="@const"/>', '<xsl:value-of select="."/>');

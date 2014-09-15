@@ -75,4 +75,8 @@ server {
     location ~ /install/ {
       deny all;
   }
+  # Force the latest IE version
+  add_header "X-UA-Compatible" "IE=Edge";
+
+  location = /favicon.ico { access_log off; log_not_found off; }
 }
