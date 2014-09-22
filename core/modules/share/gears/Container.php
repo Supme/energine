@@ -13,7 +13,7 @@ class Container;
  *
  * @version 1.0.0
  */
-
+namespace Energine\share\gears;
 
 /**
  * Drop-down menu.

@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['langswitcher_2eclass_2ephp',['LangSwitcher.class.php',['../LangSwitcher_8class_8php.html',1,'']]],
-  ['language_2eclass_2ephp',['Language.class.php',['../Language_8class_8php.html',1,'']]],
-  ['languageeditor_2eclass_2ephp',['LanguageEditor.class.php',['../LanguageEditor_8class_8php.html',1,'']]],
-  ['link_2eclass_2ephp',['Link.class.php',['../Link_8class_8php.html',1,'']]],
-  ['linkingeditor_2eclass_2ephp',['LinkingEditor.class.php',['../LinkingEditor_8class_8php.html',1,'']]],
-  ['loginform_2eclass_2ephp',['LoginForm.class.php',['../LoginForm_8class_8php.html',1,'']]]
+  ['langswitcher_2ephp',['LangSwitcher.php',['../LangSwitcher_8php.html',1,'']]],
+  ['language_2ephp',['Language.php',['../Language_8php.html',1,'']]],
+  ['languageeditor_2ephp',['LanguageEditor.php',['../LanguageEditor_8php.html',1,'']]],
+  ['link_2ephp',['Link.php',['../Link_8php.html',1,'']]],
+  ['linkingeditor_2ephp',['LinkingEditor.php',['../LinkingEditor_8php.html',1,'']]],
+  ['loginform_2ephp',['LoginForm.php',['../LoginForm_8php.html',1,'']]]
 ];
