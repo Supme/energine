@@ -13,6 +13,8 @@ class CrossDomainAuth;
  *
  * @version 1.0.0
  */
+namespace Energine\share\components;
+use Energine\share\gears\Component;
 
 /**
  * Component for cross-domain authentication.
@@ -21,7 +23,8 @@ class CrossDomainAuth;
 class CrossDomainAuth;
 @endcode
  */
-class CrossDomainAuth extends Component {
+
+class CrossDomainAuth extends Component{
     /**
      * @copydoc Component::__construct
      */

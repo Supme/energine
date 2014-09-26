@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['mail',['Mail',['../classMail.html',1,'']]],
-  ['multilanguagebuilder',['MultiLanguageBuilder',['../classMultiLanguageBuilder.html',1,'']]]
+  ['mail',['Mail',['../classEnergine_1_1share_1_1gears_1_1Mail.html',1,'Energine::share::gears']]],
+  ['multilanguagebuilder',['MultiLanguageBuilder',['../classEnergine_1_1share_1_1gears_1_1MultiLanguageBuilder.html',1,'Energine::share::gears']]]
 ];

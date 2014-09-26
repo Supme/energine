@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['emptybuilder_2eclass_2ephp',['EmptyBuilder.class.php',['../EmptyBuilder_8class_8php.html',1,'']]],
-  ['errordocument_2eclass_2ephp',['ErrorDocument.class.php',['../ErrorDocument_8class_8php.html',1,'']]],
-  ['eventhandler_2eclass_2ephp',['EventHandler.class.php',['../EventHandler_8class_8php.html',1,'']]],
-  ['extendedfeed_2eclass_2ephp',['ExtendedFeed.class.php',['../ExtendedFeed_8class_8php.html',1,'']]],
-  ['extendedfeededitor_2eclass_2ephp',['ExtendedFeedEditor.class.php',['../ExtendedFeedEditor_8class_8php.html',1,'']]],
-  ['extendedsaver_2eclass_2ephp',['ExtendedSaver.class.php',['../ExtendedSaver_8class_8php.html',1,'']]]
+  ['emptybuilder_2ephp',['EmptyBuilder.php',['../EmptyBuilder_8php.html',1,'']]],
+  ['errordocument_2ephp',['ErrorDocument.php',['../ErrorDocument_8php.html',1,'']]],
+  ['eventhandler_2ephp',['EventHandler.php',['../EventHandler_8php.html',1,'']]],
+  ['extendedfeed_2ephp',['ExtendedFeed.php',['../ExtendedFeed_8php.html',1,'']]],
+  ['extendedfeededitor_2ephp',['ExtendedFeedEditor.php',['../ExtendedFeedEditor_8php.html',1,'']]],
+  ['extendedsaver_2ephp',['ExtendedSaver.php',['../ExtendedSaver_8php.html',1,'']]]
 ];

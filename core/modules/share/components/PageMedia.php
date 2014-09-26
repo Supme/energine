@@ -13,7 +13,9 @@ class PageMedia;
  *
  * @version 1.0.0
  */
-
+namespace Energine\share\components;
+use Energine\share\gears\AttachmentManager;
+use Energine\share\gears\Field;
 /**
  * Show media container on the page with attached to that page media files.
  *
@@ -22,18 +24,9 @@ class PageMedia;
 @endcode
  */
 class PageMedia extends DataSet {
-    //todo VZ: This can be removed.
-    /**
-     * @copydoc DataSet::__construct
-     */
-    public function __construct($name, $module, array $params = null) {
-        parent::__construct($name, $module, $params);
-    }
-
     /**
      * @copydoc DataSet::main
      */
-    // Выводит галлерею
     protected function main() {
         $this->prepare();
 

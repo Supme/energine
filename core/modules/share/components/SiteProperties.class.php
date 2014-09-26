@@ -2,8 +2,8 @@
 /**
  * Содержит класс SiteProperties
  *
- * @package energine
- * @subpackage trku
+ * @package Energine
+ * @subpackage share
  * @author dr.Pavka
  * @copyright Energine 2012
  */
@@ -13,8 +13,8 @@ use Energine\share\gears\Component;
 /**
  * Site variables from "share_sites_properties"
  *
- * @package energine
- * @subpackage trku
+ * @package Energine
+ * @subpackage share
  * @author dr.Pavka
  */
 class SiteProperties extends Component {

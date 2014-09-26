@@ -13,7 +13,14 @@ final class NavigationMenu;
  *
  * @version 1.0.0
  */
-
+namespace Energine\share\components;
+use Energine\share\gears\FieldDescription;
+use Energine\share\gears\DataDescription;
+use Energine\share\gears\TagManager;
+use Energine\share\gears\Response;
+use Energine\share\gears\QAL;
+use Energine\share\gears\TreeConverter;
+use Energine\share\gears\TreeBuilder;
 /**
  * Navigation manager.
  * It shows the list of child pages and pages in the same level.
@@ -30,15 +37,6 @@ final class NavigationMenu extends DataSet {
      * @var array $filteredIDs
      */
     private $filteredIDs;
-
-    //todo VZ: This can be removed.
-    /**
-     * @copydoc DataSet::__construct
-     */
-    public function __construct($name, $module, array $params = null) {
-        parent::__construct($name, $module, $params);
-    }
-
     /**
      * @copydoc DataSet::defineParams
      */
