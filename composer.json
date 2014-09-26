@@ -47,5 +47,8 @@
             "email": "formatcok@gmail.com",
             "role": "Developer"
         }
-    ]
+    ],
+    "config": {
+        "github-protocols": ["https", "http", "git"]
+    }
 }
