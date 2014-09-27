@@ -49,6 +49,20 @@
         }
     ],
     "config": {
-        "github-protocols": ["https", "http", "git"]
-    }
+
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "energine/cmf",
+                "version": "3.1.7",
+                "source": {
+                    "url": "https://github.com/energine-cmf/energine.git",
+                    "type": "git",
+                    "reference": "energine.ns"
+                }
+            }
+        }
+    ]
 }
