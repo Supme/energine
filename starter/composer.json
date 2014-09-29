@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Energine\\": "core/modules",
+            "Energine\\": "../core/modules",
             "EnergineSite\\": "starter/htdocs/site/modules"
         }
     },
