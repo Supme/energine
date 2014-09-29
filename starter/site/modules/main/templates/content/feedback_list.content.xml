@@ -16,12 +16,10 @@
         </container>
     </container>
     <container name="center" column="column" html_class="col col2 last_col">
-        <container name="fbContainer" block="alfa" widget="static">
-            <component name="feedbackRecipientsEditor" module="share" class="Grid">
+        <container name="fContainer" block="alfa" widget="static">
+            <component name="feedbackList" module="apps" class="FeedbackList">
                 <params>
                     <param name="rights">3</param>
-                    <param name="tableName">apps_feedback_recipient</param>
-                    <param name="config">site/modules/main/config/FeedbackRecipientsEditor.component.xml</param>
                 </params>
             </component>
         </container>
