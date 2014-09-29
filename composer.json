@@ -1,7 +1,7 @@
 {
     "name": "energine/cmf",
     "description": "Energine is a content management framework based on the XML/XSLT transformations.",
-    "minimum-stability": "stable",
+    "type":"project",
     "license": "MIT",
     "keywords": ["xml", "xslt", "framework", "cmf"],
     "homepage": "http://energine.net/",
@@ -47,8 +47,5 @@
             "email": "formatcok@gmail.com",
             "role": "Developer"
         }
-    ],
-    "config": {
-        "github-protocols": ["https", "http", "git"]
-    }
+    ]
 }
