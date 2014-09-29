@@ -4,13 +4,7 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
     >
 
-    <xsl:output method="html"
-                version="1.0"
-                encoding="utf-8"
-                omit-xml-declaration="yes"
-                doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
-                doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
-                indent="yes" />
+    <xsl:output method="html" doctype-system="about:legacy-compat"/>
 
     <xsl:variable name="BASE" select="/document/properties/property[@name='base']"/>
     <xsl:variable name="STATIC_URL" select="$BASE"/>
@@ -18,38 +12,45 @@
     <xsl:variable name="LANG_ABBR" select="/document/properties/property[@name='lang']/@abbr"/>
     <xsl:variable name="IN_DEBUG_MODE"><xsl:value-of select="/document/@debug"/></xsl:variable>
 
-    <xsl:template match="/document">
-        <html>
-        	<head>
+    <xsl:template match="/">
+        <xsl:text disable-output-escaping="yes">&lt;!--[if lt IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 lt-ie7"&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 "&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if IE 8]&gt; &lt;html class="no-js lt-ie9"&gt;&lt;![endif]--&gt;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&lt;!--[if gt IE 8]&gt; &lt;!--&gt;</xsl:text>
+        <html  class="no-js">
+        <xsl:text disable-output-escaping="yes">&lt;!--&lt;![endif]--&gt;</xsl:text>
+            <head>
                 <title>Errors</title>
-        		<base href="{$BASE}"/>
-                <link href="{$STATIC_URL}images/energine.ico" rel="shortcut icon" type="image/x-icon"/>
+                <base href="{$BASE}"/>
+
+                <link rel="shortcut icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
+                <link rel="icon" href="{$STATIC_URL}favicon.ico" type="image/x-icon"/>
+                <link rel="apple-touch-icon" href="{$STATIC_URL}apple-touch-icon.png" />
                 <link href="{$STATIC_URL}stylesheets/{$FOLDER}/main.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
-				<xsl:text disable-output-escaping="yes">&lt;!--[if IE]&gt;</xsl:text>
-                    <link href="{$STATIC_URL}stylesheets/{$FOLDER}/ie.css" rel="stylesheet" type="text/css" media="Screen, projection"/>
-                <xsl:text disable-output-escaping="yes">&lt;![endif]--&gt;</xsl:text>
-                <link href="{$STATIC_URL}stylesheets/{$FOLDER}/print.css" rel="stylesheet" type="text/css" media="print"/>
-                <link href="{$STATIC_URL}stylesheets/{$FOLDER}/handheld.css" rel="stylesheet" type="text/css" media="handheld"/>
-        	</head>
-        	<body class="error_page">
-
-                <div class="base">
-                    <div class="header">
-                        <h1 class="logo">
-                            <a href="{$BASE}{$LANG_ABBR}"><img src="{$STATIC_URL}images/{$FOLDER}/energine_logo.png" width="246" height="64" alt="Energine"/></a>
-                        </h1>
-                    </div>
-                    <div class="main">
-                        <xsl:apply-templates select="errors"/>
-                        <div class="go_back"><a href="{$BASE}{$LANG_ABBR}">Вернуться на главную</a></div>
-                    </div>
-                    <div class="footer">
-                        2014
-                    </div>
-                </div>
-
-        	</body>
+            </head>
+            <body>
+                <xsl:apply-templates select="document"/>
+            </body>
         </html>
+    </xsl:template>
+
+    <xsl:template match="document">
+        <xsl:attribute name="class">error_page</xsl:attribute>
+        <div class="base">
+            <div class="header">
+                <h1 class="logo">
+                    <a href="{$BASE}{$LANG_ABBR}"><img src="{$STATIC_URL}images/{$FOLDER}/energine_logo.png" width="246" height="64" alt="Energine"/></a>
+                </h1>
+            </div>
+            <div class="main">
+                <xsl:apply-templates select="errors"/>
+                <div class="go_back"><a href="{$BASE}{$LANG_ABBR}">Вернуться на главную</a></div>
+            </div>
+            <div class="footer">
+                <xsl:text disable-output-escaping="yes">&amp;copy;</xsl:text>
+                Energine 2014
+            </div>
+        </div>
     </xsl:template>
 
     <xsl:template match="errors">
