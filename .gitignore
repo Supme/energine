@@ -8,5 +8,5 @@ starter/htdocs/system.config.php
 starter/htdocs/system.jsmap.php
 starter/htdocs/templates/
 starter/htdocs/logs/*
-starter/configs/system.config.pavka.php
+starter/configs/system.config.dev.php
 vendor/
