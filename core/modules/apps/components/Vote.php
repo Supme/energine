@@ -173,7 +173,7 @@ class Vote extends DataSet {
         );
         $this->setData($data);
         $this->setDataDescription($dataDescription);
-        E()->getController()->getTransformer()->setFileName('../../../../core/modules/apps/transformers/single_vote.xslt');
+        E()->getController()->getTransformer()->setFileName('core/modules/apps/transformers/single_vote.xslt', true);
         $this->setBuilder($this->createBuilder());
     }
 }
