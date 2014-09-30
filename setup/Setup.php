@@ -19,6 +19,7 @@ require_once('JSqueeze.php');
  * Main system setup.
  */
 final class Setup {
+    const CHARSET ='UTF-8';
     /**
      * Symlink mode  - for development
      */
@@ -78,7 +79,7 @@ final class Setup {
      * @param bool $consoleRun Is setup from console called?
      */
     public function __construct($consoleRun) {
-        header('Content-Type: text/plain; charset=' . CHARSET);
+        header('Content-Type: text/plain; charset=' . self::CHARSET);
         $this->title('Средство настройки CMF Energine');
         $this->isFromConsole = $consoleRun;
         $this->checkEnvironment();
@@ -142,12 +143,6 @@ final class Setup {
     public function checkEnvironment() {
 
         $this->title('Проверка системного окружения');
-
-        //А что за PHP версия используется?
-        if (floatval(phpversion()) < MIN_PHP_VERSION) {
-            throw new \Exception('Вашему РНР нужно еще немного подрости. Минимальная допустимая версия ' . MIN_PHP_VERSION);
-        }
-        $this->text('Версия РНР ', floatval(phpversion()), ' соответствует требованиям');
 
         //При любом действии без конфига нам не обойтись
         if (!file_exists($configName = implode(DIRECTORY_SEPARATOR, array(HTDOCS_DIR, 'system.config.php')))) {

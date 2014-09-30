@@ -1,6 +1,6 @@
 {
     "name": "energine/cmf",
-    "description": "Energine is a content management framework based on the XML/XSLT transformations.",
+    "description": "Energine is an XML/XSLT content management framework.",
     "type":"project",
     "license": "MIT",
     "keywords": ["xml", "xslt", "framework", "cmf"],

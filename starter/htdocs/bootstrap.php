@@ -43,6 +43,9 @@ define('CORE_DIR', realpath(implode(DIRECTORY_SEPARATOR, array(HTDOCS_DIR, CORE_
 // абсолютный путь к сайту
 define('SITE_DIR', realpath(implode(DIRECTORY_SEPARATOR, array(HTDOCS_DIR, SITE_REL_DIR))));
 
+//Название директории в которой содержатся модули(как ядра, так и модули проекта)
+define('MODULES', 'modules');
+
 // абсолютный путь к папке setup
 define('SETUP_DIR', $config['setup_dir']);
 
