@@ -1,6 +1,6 @@
 {
     "name": "energine/cmf",
-    "description": "Energine starter for bootstraping project.",
+    "description": "Energine is an XML/XSLT content management framework.",
     "type":"project",
     "license": "MIT",
     "keywords": ["xml", "xslt", "framework", "cmf"],
@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Energine\\": "../core/modules",
+            "Energine\\": "core/modules",
             "EnergineSite\\": "starter/htdocs/site/modules"
         }
     },
