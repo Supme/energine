@@ -1,6 +1,5 @@
 .idea/
 starter/image-cache/*
-starter/htdocs/core/
 starter/htdocs/images/
 starter/htdocs/scripts/
 starter/htdocs/stylesheets/

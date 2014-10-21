@@ -21,8 +21,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Energine\\": "core/modules",
-            "EnergineSite\\": "starter/htdocs/site/modules"
+            "Energine\\": "starter/core/modules",
+            "EnergineSite\\": "starter/site/modules"
         }
     },
     "authors": [
