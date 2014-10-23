@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * @file
  * AttachmentManager.
@@ -6,7 +6,7 @@
  * It contains the definition to:
  * @code
 class AttachmentManager;
-@endcode
+ * @endcode
  *
  * @author d.pavka
  * @copyright d.pavka@gmail.com
@@ -20,7 +20,7 @@ namespace Energine\share\gears;
  *
  * @code
 class AttachmentManager;
-@endcode
+ * @endcode
  */
 class AttachmentManager extends DBWorker {
     /**
@@ -36,7 +36,7 @@ class AttachmentManager extends DBWorker {
 
     /**
      * Data.
-     * @var Data $data.
+     * @var Data $data .
      */
     private $data;
     /**
@@ -118,7 +118,7 @@ class AttachmentManager extends DBWorker {
      */
     public function createField($mapFieldName = false, $returnOnlyFirstAttachment = false, $mapValue = false) {
         if ($this->isActive && !$this->data->isEmpty()) {
-            if(!$mapFieldName){
+            if (!$mapFieldName) {
                 $mapFieldName = $this->pk->getName();
             }
             if (!$mapValue) {
@@ -143,7 +143,7 @@ class AttachmentManager extends DBWorker {
                 $columns = $this->dbh->getColumnsInfo($mapTableName);
                 $prefix = '';
 
-                foreach($columns as $cname => $col) {
+                foreach ($columns as $cname => $col) {
                     if (isset($col['index']) && $col['index'] == 'PRI') {
                         $prefix = str_replace('_id', '', $cname);
                     }
@@ -152,7 +152,7 @@ class AttachmentManager extends DBWorker {
                 if ($langMapTableName) {
                     $lang_columns = $this->dbh->getColumnsInfo($langMapTableName);
                     $lang_pk = false;
-                    foreach($lang_columns as $cname => $col) {
+                    foreach ($lang_columns as $cname => $col) {
                         if (isset($col['index']) && $col['index'] == 'PRI' && $cname != 'lang_id') {
                             $lang_pk = $cname;
                         }
@@ -160,15 +160,15 @@ class AttachmentManager extends DBWorker {
                 }
 
                 $additional_fields = array();
-                foreach($columns as $cname => $col) {
-                    if ($cname != 'session_id' && (empty($col['index'])  or ($col['index'] != 'PRI' and (empty($col['key']['tableName']))))) {
+                foreach ($columns as $cname => $col) {
+                    if ($cname != 'session_id' && (empty($col['index']) or ($col['index'] != 'PRI' and (empty($col['key']['tableName']))))) {
                         $new_cname = str_replace($prefix . '_', '', $cname);
-                        if($new_cname != 'order_num')
+                        if ($new_cname != 'order_num')
                             $additional_fields[$cname] = $new_cname;
                     }
                 }
                 if ($langMapTableName) {
-                    foreach($lang_columns as $cname => $col) {
+                    foreach ($lang_columns as $cname => $col) {
                         if (empty($col['index']) or $col['index'] != 'PRI') {
                             $new_cname = str_replace($prefix . '_', '', $cname);
                             if ($new_cname != 'name') {
@@ -179,29 +179,29 @@ class AttachmentManager extends DBWorker {
                 }
 
                 $request = 'SELECT spu.' . $mapFieldName .
-                           ',spu.upl_id as id, spu.*, ' .
-                           'upl_path as file, upl_name as name, upl_title as title, TIME_FORMAT(upl_duration, "%i:%s") as duration,
+                    ',spu.upl_id as id, spu.*, ' .
+                    'upl_path as file, upl_name as name, upl_title as title, upl_width as width, upl_height as height, TIME_FORMAT(upl_duration, "%i:%s") as duration,
                             upl_internal_type as type,upl_mime_type as mime, upl_data as data, ' .
-                            'upl_is_mp4 as is_mp4, upl_is_webm as is_webm, upl_is_flv as is_flv ' .
-                            (($langMapTableName && $lang_pk) ? ', spt.*' : '') .
-                           'FROM '.self::ATTACH_TABLENAME.' su ' .
-                           'LEFT JOIN `' . $mapTableName .
-                           '` spu ON spu.upl_id = su.upl_id ' .
-                           (($langMapTableName && $lang_pk) ? 'LEFT JOIN `' . $langMapTableName . '` spt ON spu.' . $lang_pk . ' = spt.' . $lang_pk . ' AND spt.lang_id = ' . E()->getDocument()->getLang() : '') .
-                           ' WHERE ' . $mapFieldName . ' IN (' .
-                           implode(',', $filteredMapValue) .
-                           ') AND (su.upl_is_ready=1) AND (su.upl_is_active = 1)';
+                    'upl_is_mp4 as is_mp4, upl_is_webm as is_webm, upl_is_flv as is_flv ' .
+                    (($langMapTableName && $lang_pk) ? ', spt.*' : '') .
+                    'FROM ' . self::ATTACH_TABLENAME . ' su ' .
+                    'LEFT JOIN `' . $mapTableName .
+                    '` spu ON spu.upl_id = su.upl_id ' .
+                    (($langMapTableName && $lang_pk) ? 'LEFT JOIN `' . $langMapTableName . '` spt ON spu.' . $lang_pk . ' = spt.' . $lang_pk . ' AND spt.lang_id = ' . E()->getDocument()->getLang() : '') .
+                    ' WHERE ' . $mapFieldName . ' IN (' .
+                    implode(',', $filteredMapValue) .
+                    ') AND (su.upl_is_ready=1) AND (su.upl_is_active = 1)';
 
                 // получаем имя колонки _order_num и сортируем по этому полю, если оно есть
                 if ($columns) {
-                    foreach($columns as $col => $colInfo) {
+                    foreach ($columns as $col => $colInfo) {
                         if (strpos($col, '_order_num') !== false) {
                             $request .= ' ORDER BY ' . $col;
                         }
                     }
                 }
 
-                $images = $this->dbh->selectRequest($request);
+                $images = $this->dbh->select($request);
 
                 if (is_array($images)) {
                     foreach ($images as $row) {
@@ -210,7 +210,7 @@ class AttachmentManager extends DBWorker {
 
                         // делаем преобразование имен из $additional_fiels (отрезаем prefix)
                         if ($additional_fields) {
-                            foreach($additional_fields as $old_field => $new_field) {
+                            foreach ($additional_fields as $old_field => $new_field) {
                                 if (array_key_exists($old_field, $row)) {
                                     $val = $row[$old_field];
                                     unset($row[$old_field]);
@@ -232,10 +232,23 @@ class AttachmentManager extends DBWorker {
 
                     for ($i = 0; $i < sizeof($mapValue); $i++) {
                         if (isset($imageData[$mapValue[$i]])) {
-                            if($this->addOG){
-                                foreach($imageData[$mapValue[$i]] as $row){
+                            if ($this->addOG) {
+                                foreach ($imageData[$mapValue[$i]] as $row) {
                                     E()->getOGObject()->addImage($row['file']);
                                 }
+                                $attachment = $imageData[$mapValue[$i]];
+                                if (isset($attachment[0]) && ($attachment[0]['type'] === 'video')) {
+                                    //inspect($attachment);
+                                    E()->getOGObject()->setVideo(
+                                        $attachment[0]['file'],
+                                        $attachment[0]['duration'],
+                                        $attachment[0]['mime'],
+                                        $attachment[0]['width'],
+                                        $attachment[0]['height']
+                                    );
+                                }
+
+
                             }
 
                             $builder = new SimpleBuilder();
@@ -279,9 +292,9 @@ class AttachmentManager extends DBWorker {
                             $dataDescription->addFieldDescription($fd);
 
                             $playlist = array();
-                            foreach(array('mp4', 'webm', 'flv') as $fileType){
-                                if ($imageData[$mapValue[$i]][0]['is_'.$fileType] == '1') {
-                                    $playlist[] = array('id' => $base . '.'.$fileType, 'type' => $fileType);
+                            foreach (array('mp4', 'webm', 'flv') as $fileType) {
+                                if ($imageData[$mapValue[$i]][0]['is_' . $fileType] == '1') {
+                                    $playlist[] = array('id' => $base . '.' . $fileType, 'type' => $fileType);
                                 }
                             }
 
@@ -293,7 +306,7 @@ class AttachmentManager extends DBWorker {
                             }
 
                             // дополнительные поля из основной и языковой таблицы _uploads
-                            foreach($additional_fields as $new_name) {
+                            foreach ($additional_fields as $new_name) {
                                 if ($new_name != 'name') {
                                     $fd = new FieldDescription($new_name);
                                     $fd->setType(FieldDescription::FIELD_TYPE_STRING);

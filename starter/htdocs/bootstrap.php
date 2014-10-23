@@ -23,16 +23,17 @@ if (!array_key_exists('setup_dir', $config)) {
 }
 
 // относительный путь к ядру - если ядро вынесено на 1 уроверь выше htdocs
-// define('CORE_REL_DIR', '../core');
+ define('CORE_REL_DIR', '../core');
 
 // относительный путь к ядру - если ядро находится на одном уровне с htdocs
-define('CORE_REL_DIR', 'core');
+//define('CORE_REL_DIR', 'core');
+
+// относительный путь к сайту - если site вынесен на 1 уровень выше htdocs
+define('SITE_REL_DIR', '../site');
 
 // относительный путь к сайту - если site находится на одном уровне с htdocs
 // define('SITE_REL_DIR', '../site');
 
-// относительный путь к сайту - если site вынесен на 1 уровень выше htdocs
-define('SITE_REL_DIR', '../site');
 
 // абсолютный путь к htdocs
 define('HTDOCS_DIR', realpath(dirname(__FILE__)));
@@ -42,6 +43,9 @@ define('CORE_DIR', realpath(implode(DIRECTORY_SEPARATOR, array(HTDOCS_DIR, CORE_
 
 // абсолютный путь к сайту
 define('SITE_DIR', realpath(implode(DIRECTORY_SEPARATOR, array(HTDOCS_DIR, SITE_REL_DIR))));
+
+//Название директории в которой содержатся модули(как ядра, так и модули проекта)
+define('MODULES', 'modules');
 
 // абсолютный путь к папке setup
 define('SETUP_DIR', $config['setup_dir']);

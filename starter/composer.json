@@ -1,7 +1,7 @@
 {
     "name": "energine/cmf",
-    "description": "Energine is a content management framework based on the XML/XSLT transformations.",
-    "minimum-stability": "stable",
+    "description": "Energine starter for bootstraping project.",
+    "type":"project",
     "license": "MIT",
     "keywords": ["xml", "xslt", "framework", "cmf"],
     "homepage": "http://energine.net/",
@@ -21,8 +21,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Energine\\": "starter/core/modules",
-            "EnergineSite\\": "starter/site/modules"
+            "Energine\\": "../core/modules",
+            "EnergineSite\\": "starter/htdocs/site/modules"
         }
     },
     "authors": [
@@ -46,23 +46,6 @@
             "name": "Valeriy Zinchenko",
             "email": "formatcok@gmail.com",
             "role": "Developer"
-        }
-    ],
-    "config": {
-
-    },
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "energine/cmf",
-                "version": "3.1.7",
-                "source": {
-                    "url": "https://github.com/energine-cmf/energine.git",
-                    "type": "git",
-                    "reference": "energine.ns"
-                }
-            }
         }
     ]
 }
